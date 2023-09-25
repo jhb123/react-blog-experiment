@@ -3,7 +3,11 @@ name = "rocket-blog"
 version = "0.1.0"
 edition = "2021"
 
+[dependencies]
+serde = "1.0.188"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dependencies]
+[dependencies.rocket]
 rocket = "=0.5.0-rc.3"
+features = ["json"]
