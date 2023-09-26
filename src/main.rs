@@ -9,11 +9,13 @@ use rocket::response::{content, Redirect};
 use rocket::serde::json::Json;
 use serde::Deserialize;
 
-const base_path: &'static str = "/Users/josephbriggs/repos/rocket-blog/frontend/build";
+// const base_path: &'static str = "/Users/josephbriggs/repos/rocket-blog/frontend/build";
 
 #[get("/")]
 fn index() -> content::RawHtml<String> {
-    let mut file = File::open(base_path.to_owned() + "/index.html").expect("Unable to open the file");
+    let base_path = Path::new("./frontend/build");
+    let index_path = base_path.join("index.html");
+    let mut file = File::open(index_path).expect("Unable to open the file");
     let mut contents = String::new();
     file.read_to_string(&mut contents).expect("Unable to read the file");
     content::RawHtml(contents)
@@ -22,7 +24,9 @@ fn index() -> content::RawHtml<String> {
 
 #[get("/<path..>")]
 async fn react_build(path: PathBuf) -> Option<NamedFile> {
-    NamedFile::open(Path::new(base_path).join(path)).await.ok()
+    let base_path = Path::new("./frontend/build");
+    let full_path = base_path.join(path);
+    NamedFile::open(full_path).await.ok()
 }
 
 #[derive(FromForm)]
