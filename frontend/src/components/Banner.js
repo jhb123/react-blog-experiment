@@ -6,8 +6,9 @@ import * as route from "../navigation/route";
 const BannerLink = ({to, children, ...props}) => {
   const resolvedPath = useResolvedPath(to)
   const isActive = useMatch({path : resolvedPath.pathname, end :true })
+  console.log(isActive ? to + ' active' : to + " not active")
   return(
-  <li className={isActive ? 'active' : ""}>
+  <li className={isActive ? "onBackground" : ""}>
     <Link to={to} {...props}>{children}</Link>
   </li>
   );
@@ -16,7 +17,7 @@ const BannerLink = ({to, children, ...props}) => {
 const Banner = () => {
   return (
     <>
-      <nav className='nav'>
+      <nav className='nav background'>
         <h1 className="bannerTitle">Joseph Briggs</h1>
         <ul>
           <BannerLink to = {route.HomeRoute.path}>{route.HomeRoute.name}</BannerLink>

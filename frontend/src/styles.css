@@ -1,5 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 * {
     box-sizing: border-box;
+    font-family: Roboto;
+}
+
+h1 {
+    letter-spacing: 5px;
+    font-weight: 700;
 }
 
 body {
@@ -11,8 +18,6 @@ body {
 }
 
 .nav {
-    background-color: gray;
-    color: wheat;
     display: flex;
     justify-content: space-between;
     align-items: stretch;
@@ -27,12 +32,6 @@ body {
     gap: 0rem;
 }
 
-.nav li:hover {
-    background-color: darkgrey;
-}
-.nav li.active {
-    background-color: brown;
-}
 
 .nav a {
     color: inherit;
@@ -54,11 +53,12 @@ body {
 
 .Footer {
     margin-top: auto;
-    background-color: gray;
-    color: wheat;
+    /* background-color: gray;
+    color: wheat; */
     padding: .5rem;
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: 2rem
 
 }
@@ -72,21 +72,18 @@ body {
 }
 
 .admin-form {
-    background-color: black;
-    color: white;
+    padding: 30px;
     position: absolute;
     top: 50%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%);
-    /* height: 200px; */
-    /* width: 300px; */
-    padding: 20px;
     display: flex;
     align-items: center;
     flex-direction: column;
     justify-content: center;
     gap:2rem;
+    border-radius: 30px;
 }
 
 .admin-control {
@@ -94,4 +91,74 @@ body {
     flex-direction: row;
     justify-content: center;
     gap:2rem;
+}
+
+button {
+    border:  2px solid;
+    border-radius: 10px;
+    padding: 5pt;
+    font-size: 12pt;
+    min-width: 100px;
+    /* box-shadow: none; */
+}
+
+/* Background styles */
+
+.background {
+    background-color: gray;
+    color: wheat;
+}g
+
+.background li:hover {
+    background-color: darkgray;
+}
+
+/* onBackground */
+.onBackground{
+    background-color: #aaaaaa;
+    color: wheat;
+}
+
+li.onBackground:hover {
+    background-color: #bbbbbb;
+    color: wheat;
+}
+
+
+/* Primary styles */
+
+button.primary{
+    border-color: brown;
+    background-color: brown;
+    color: wheat;
+}
+
+.primary{
+    background-color: brown;
+    color: wheat;
+}
+
+.primary:hover{
+    background-color: lightcoral;
+}
+
+li.primary:hover {
+    background-color: lightcoral;
+}
+
+/* Secondary styles */
+
+.secondary{
+    background-color: brown;
+    color: wheat;
+}
+
+button.secondary{
+    background-color: darkgray;
+    border-color: brown;
+    color: brown;
+}
+
+.secondary:hover{
+    background-color: lightcoral;
 }
