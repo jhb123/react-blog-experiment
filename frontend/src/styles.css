@@ -79,8 +79,9 @@ body {
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%);
-    height: 200px;
-    width: 300px;
+    /* height: 200px; */
+    /* width: 300px; */
+    padding: 20px;
     display: flex;
     align-items: center;
     flex-direction: column;

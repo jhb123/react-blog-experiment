@@ -41,14 +41,14 @@ const AdminForm = ({handleAdminToggle, handleToggleShowAdminPage}) => {
 
   return (
     <div className="scrim">
-      <div className="admin-control">
+      {/* <div className="admin-control"> */}
         <div className="admin-form">
         <LabeledField label="Admin" type="text" name = "password" onChange={handleSetPassword}/>
         { isErr ? <p1>Error logging in</p1> : null}
         <button onClick={() => admin_req(password)}>sign in</button>
         <button onClick={handleToggleShowAdminPage}>cancel</button>
         </div>
-      </div>
+      {/* </div> */}
     </div>
   );
 };
