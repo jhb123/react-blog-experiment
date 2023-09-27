@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useContext } from "react";
 import axios from "axios";
+import { AdminContext } from "../pages/Layout";
 
 const LabeledField = ({type, name, label, onChange}) => {
   return (
@@ -13,32 +14,34 @@ const LabeledField = ({type, name, label, onChange}) => {
 
 
 const AdminForm = ({handleAdminToggle, handleToggleShowAdminPage}) => {
+  
   const [password, setPassword] = useState("")
-    const handleSetPassword = (event) => {
-      setPassword((password) => event.target.value)
-    }
+  const handleSetPassword = (event) => {
+    setPassword((password) => event.target.value)
+  }
 
   const [isErr, setIsErr] = useState(false)
-    
 
-  const admin_req = (input_password) => axios.post('/admin_login', {
-    password: input_password,
-  }).then(function (response) {
-    handleAdminToggle(true);
-    handleToggleShowAdminPage();
-    setIsErr(false);
-  })
-  .catch(function (error) {
-    console.log(error);
-    setIsErr(true);
-  });
+  const [isAdmin, setIsAdmin] = useContext(AdminContext);
 
+
+  const admin_req = (input_password) => 
+    axios.post('/admin_login', {password: input_password})
+      .then(function (response) {
+        handleToggleShowAdminPage();
+        setIsAdmin(true);
+        setIsErr(false);
+      })
+      .catch(function (error) {
+        console.log("there was an issue");
+        setIsAdmin(false);
+        setIsErr(true);
+      });
 
 
   return (
     <div className="scrim">
       <div className="admin-control">
-
       <div className="background admin-form">
       <LabeledField label="Admin" type="text" name = "password" onChange={handleSetPassword}/>
       { isErr ? <p1>Error logging in</p1> : null}
@@ -46,7 +49,6 @@ const AdminForm = ({handleAdminToggle, handleToggleShowAdminPage}) => {
       <button className="secondary" onClick={handleToggleShowAdminPage}>cancel</button>
       </div>
       </div>
-
      </div>
   );
 };

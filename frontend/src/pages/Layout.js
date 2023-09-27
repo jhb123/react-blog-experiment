@@ -3,8 +3,17 @@ import { useState } from "react";
 import Banner from "../components/Banner";
 import Footer from "../components/Footer";
 import AdminForm from "../components/AdminForm";
+import { createContext } from "react";
 
-const Layout = ({isAdmin, handleAdminToggle}) => {
+export const AdminContext = createContext(false);
+
+const Layout = () => {
+
+  // temporary debug stuff
+  const [isAdmin, setIsAdmin] = useState(false)
+  const handlesetIsAdmin = (val) => {
+    setIsAdmin((showingAdminPage) => val)
+  }
 
   const [showingAdminPage, setShowingAdminPage] = useState(false)
   const handleToggleShowAdminPage = () => {
@@ -13,13 +22,15 @@ const Layout = ({isAdmin, handleAdminToggle}) => {
 
   return (
     <>
-      {showingAdminPage ? <AdminForm handleAdminToggle={handleAdminToggle} handleToggleShowAdminPage={handleToggleShowAdminPage}/> : ""}
-      <div className="AppPage">
-        <Banner />
-        <Outlet />
-        {isAdmin ? <p1>is admin</p1> : <p1>not admin</p1>}
-        <Footer handleAdminToggle={handleToggleShowAdminPage} />
-      </div>
+      <AdminContext.Provider value={[isAdmin, handlesetIsAdmin]}>
+        {showingAdminPage ? <AdminForm handleToggleShowAdminPage={handleToggleShowAdminPage}/> : ""}
+        <div className="AppPage">
+          <Banner />
+          <Outlet />
+          {isAdmin ? <p1>is admin</p1> : <p1>not admin</p1>}
+          <Footer handleAdminToggle={handleToggleShowAdminPage} />
+        </div>
+      </AdminContext.Provider>
     </>
   )
 };
