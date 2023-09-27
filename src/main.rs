@@ -8,6 +8,7 @@ use rocket::http::{ContentType, Status};
 use rocket::response::{content, Redirect};
 use rocket::serde::json::Json;
 use serde::Deserialize;
+use sha2::{Sha256, Digest};
 
 // const base_path: &'static str = "/Users/josephbriggs/repos/rocket-blog/frontend/build";
 
@@ -37,7 +38,16 @@ struct Admin<'r> {
 
 #[post("/admin_login", format = "json", data = "<admin>")]
 fn admin_login(admin: Json<Admin>) -> Status {
-    if admin.password == "foo" {
+    let mut hasher = Sha256::new();
+    hasher.update(admin.password);
+    let hash = hasher.finalize();
+
+    let mut f = File::open("admin_hash").unwrap();
+
+    let mut buffer = Vec::<u8>::new();
+    let _ = f.read_to_end(&mut buffer).unwrap();
+
+    if buffer == hash[..] {
         Status::Accepted
     } else {
         Status::Forbidden
