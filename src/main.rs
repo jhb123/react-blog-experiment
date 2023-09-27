@@ -2,6 +2,7 @@
 use std::io::prelude::*;
 use std::fs::File;
 use std::path::{PathBuf, Path};
+use base64ct::{Base64, Encoding};
 use rocket::form::Form;
 use rocket::fs::NamedFile;
 use rocket::http::{ContentType, Status};
@@ -37,7 +38,7 @@ struct Admin<'r> {
 }
 
 #[post("/admin_login", format = "json", data = "<admin>")]
-fn admin_login(admin: Json<Admin>) -> Status {
+fn admin_login(admin: Json<Admin>) -> (Status, String) {
     let mut hasher = Sha256::new();
     hasher.update(admin.password);
     let hash = hasher.finalize();
@@ -48,9 +49,9 @@ fn admin_login(admin: Json<Admin>) -> Status {
     let _ = f.read_to_end(&mut buffer).unwrap();
 
     if buffer == hash[..] {
-        Status::Accepted
+        (Status::Accepted, Base64::encode_string(&hash))
     } else {
-        Status::Forbidden
+        (Status::Forbidden, "password not valid".to_string())
     }
 }
 

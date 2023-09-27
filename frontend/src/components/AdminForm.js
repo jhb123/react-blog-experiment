@@ -33,7 +33,6 @@ const AdminForm = ({handleAdminToggle, handleToggleShowAdminPage}) => {
         setIsErr(false);
       })
       .catch(function (error) {
-        console.log("there was an issue");
         setIsAdmin(false);
         setIsErr(true);
       });

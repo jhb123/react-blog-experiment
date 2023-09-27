@@ -1,6 +1,5 @@
 use std::fs::File;
 use std::io::Write;
-use base64ct::{Base64, Encoding};
 use dialoguer::{theme::ColorfulTheme, Select, Password};
 use sha2::{Sha256, Digest};
 
