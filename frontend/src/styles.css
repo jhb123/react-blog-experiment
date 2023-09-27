@@ -107,10 +107,10 @@ button {
 .background {
     background-color: gray;
     color: wheat;
-}g
+}
 
 .background li:hover {
-    background-color: darkgray;
+    background-color: #bbbbbb;
 }
 
 /* onBackground */
