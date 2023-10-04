@@ -5,7 +5,11 @@ edition = "2021"
 
 [dependencies]
 base64ct = { version = "1.6.0", features = ["alloc"] }
+chrono = { version = "0.4.31", features = ["clock", "serde"] }
 dialoguer = "0.11.0"
+jsonwebtoken = "8.3.0"
+lazy_static = "1.4.0"
+rand = "0.8.5"
 serde = "1.0.188"
 sha2 = "0.10"
 

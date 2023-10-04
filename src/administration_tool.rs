@@ -1,11 +1,13 @@
-use std::fs::File;
+use std::{fs::File, io::BufReader};
 use std::io::Write;
 use dialoguer::{theme::ColorfulTheme, Select, Password};
+use rand::{Rng, distributions::Alphanumeric};
 use sha2::{Sha256, Digest};
 
 fn main() {
     let selections = &[
         "Set admin password",
+        "Generate secret key",
         "Initialise database",
     ];
 
@@ -19,7 +21,8 @@ fn main() {
     if let Some(selection) = selection {
         let _ = match selection {
             0=> set_admin_password(),
-            1=> create_database(),
+            1=> create_secret_key(),
+            2=> create_database(),
             _ => Ok(())
         };
     } else {
@@ -43,6 +46,19 @@ fn set_admin_password() -> std::io::Result<()> {
     file.write_all(&hash)?;
     Ok(())
     
+}
+
+fn create_secret_key() -> std::io::Result<()> {
+
+    let secret: String = rand::thread_rng()
+    .sample_iter(&Alphanumeric)
+    .take(100)
+    .map(char::from)
+    .collect();
+
+    let mut file = File::create("secret_key")?;
+    file.write(secret.as_bytes())?;
+    Ok(())
 }
 
 fn create_database() -> std::io::Result<()> {
