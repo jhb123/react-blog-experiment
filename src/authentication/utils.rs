@@ -57,7 +57,7 @@ pub struct Claims {
 impl Default for Claims {
     fn default() -> Self { 
         let issue_time = Utc::now();
-        let expire_time = issue_time + Duration::seconds(5);
+        let expire_time = issue_time + Duration::hours(6);
         Claims {
             iat: issue_time,
             exp: expire_time,
