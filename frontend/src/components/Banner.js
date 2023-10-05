@@ -6,7 +6,6 @@ import * as route from "../navigation/route";
 const BannerLink = ({to, children, ...props}) => {
   const resolvedPath = useResolvedPath(to)
   const isActive = useMatch({path : resolvedPath.pathname, end :true })
-  console.log(isActive ? to + ' active' : to + " not active")
   return(
   <li className={isActive ? "onBackground" : ""}>
     <Link to={to} {...props}>{children}</Link>

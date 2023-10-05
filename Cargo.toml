@@ -4,10 +4,25 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+base64ct = { version = "1.6.0", features = ["alloc"] }
+chrono = { version = "0.4.31", features = ["clock", "serde"] }
+dialoguer = "0.11.0"
+jsonwebtoken = "8.3.0"
+lazy_static = "1.4.0"
+rand = "0.8.5"
 serde = "1.0.188"
+sha2 = "0.10"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.rocket]
 rocket = "=0.5.0-rc.3"
 features = ["json"]
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[[bin]]
+name = "admin"
+path = "src/administration_tool.rs"

@@ -4,6 +4,7 @@ import Banner from "../components/Banner";
 import Footer from "../components/Footer";
 import AdminForm from "../components/AdminForm";
 import { createContext } from "react";
+import {secured_test} from "../requests/admin"
 
 export const AdminContext = createContext(false);
 
@@ -28,6 +29,7 @@ const Layout = () => {
           <Banner />
           <Outlet />
           {isAdmin ? <p1>is admin</p1> : <p1>not admin</p1>}
+          {isAdmin ? <button className="primary" onClick={secured_test}>secured</button> : ""}
           <Footer handleAdminToggle={handleToggleShowAdminPage} />
         </div>
       </AdminContext.Provider>

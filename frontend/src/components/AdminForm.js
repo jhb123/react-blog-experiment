@@ -2,6 +2,7 @@
 import { useState, useContext } from "react";
 import axios from "axios";
 import { AdminContext } from "../pages/Layout";
+import {instance} from "../requests/admin"
 
 const LabeledField = ({type, name, label, onChange}) => {
   return (
@@ -31,9 +32,11 @@ const AdminForm = ({handleAdminToggle, handleToggleShowAdminPage}) => {
         handleToggleShowAdminPage();
         setIsAdmin(true);
         setIsErr(false);
+        console.log(response.data)
+        instance.defaults.headers.common['Authorization'] = `Bearer ${response.data}`;
+        //set("Authorization", "Bearer ${response.statusText}")
       })
       .catch(function (error) {
-        console.log("there was an issue");
         setIsAdmin(false);
         setIsErr(true);
       });
