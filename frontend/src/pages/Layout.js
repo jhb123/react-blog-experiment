@@ -16,23 +16,20 @@ const Layout = () => {
   // temporary debug stuff
   const [isAdmin, setIsAdmin] = useState(false)
   const handlesetIsAdmin = (val) => {
-    setIsAdmin((showingAdminPage) => val)
+    setIsAdmin(val)
   }
 
   const [showingAdminPage, setShowingAdminPage] = useState(false)
-  const handleToggleShowAdminPage = () => {
-    setShowingAdminPage((showingAdminPage) => !showingAdminPage)
-  }
+  
 
   return (
     <>
       <AdminContext.Provider value={[isAdmin, handlesetIsAdmin]}>
-        {showingAdminPage ? <AdminForm handleToggleShowAdminPage={handleToggleShowAdminPage}/> : ""}
-        <Banner  handleAdminToggle={handleToggleShowAdminPage}/>
-        <Container sx={{bgcolor:"green", height : "100vh"}}>
+        <Banner handleShowAdminLogin={setShowingAdminPage}/>
+        <AdminForm open={showingAdminPage} setOpen={setShowingAdminPage}/>
+        <Container sx={{height : "100vh"}}>
             <Outlet />
             {isAdmin ? <p1>is admin</p1> : <p1>not admin</p1>}
-            {isAdmin ? <button className="primary" onClick={secured_test}>secured</button> : ""}
         </Container>   
       </AdminContext.Provider>
     </>

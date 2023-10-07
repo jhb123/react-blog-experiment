@@ -26,7 +26,7 @@ const BannerButton = ({to, children, ...props}) => {
 }
 
 
-const Banner = ({handleAdminToggle}) => {
+const Banner = ({handleShowAdminLogin}) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="sticky" color="background">
@@ -37,7 +37,7 @@ const Banner = ({handleAdminToggle}) => {
           <BannerButton to = {route.HomeRoute.path}>{route.HomeRoute.name}</BannerButton>
           <BannerButton to = {route.BlogRoute.path}>{route.BlogRoute.name}</BannerButton>
           <BannerButton to = {route.ContactRoute.path}>{route.ContactRoute.name}</BannerButton>
-          <IconButton color="inherit" onClick={handleAdminToggle}>
+          <IconButton color="inherit" onClick={handleShowAdminLogin}>
             <AdminPanelSettingsIcon />
           </IconButton>
         </Toolbar>
