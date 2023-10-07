@@ -4,10 +4,6 @@ import * as route from "./navigation/route";
 
 const App = () => {
 
-    // const handleAdminToggle = (isSuccess) => {
-    //     setIsAdmin(isSuccess)
-    // }
-
     return (
         <BrowserRouter>
             <Routes>
