@@ -7,7 +7,8 @@ import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import {$isRangeSelection, $getSelection} from 'lexical';
+import {$isRangeSelection, $getSelection,   FORMAT_TEXT_COMMAND,
+    FORMAT_ELEMENT_COMMAND,} from 'lexical';
 import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode } from '@lexical/rich-text';
 import { HeadingNode } from '@lexical/rich-text';
@@ -17,6 +18,10 @@ import Typography from '@mui/material/Typography';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import FormatSize from '@mui/icons-material/FormatSize';
+import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
+import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
+import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
+import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 
@@ -63,35 +68,20 @@ function EditorToolbar() {
     return (
         <Box sx={{ flexGrow: 1 }}>
             <Toolbar>
-                <FontStyleMenu />
+                <FontSizeEditorToolbarMenu />
+                <FontAlignmentEditorToolbarMenu />
             </Toolbar>
         </Box>
     );
 }
 
-
-function FontStyleMenu() {
-
-    const [editor] = useLexicalComposerContext();
-
-    const chooseFontStyle = (format) => {
-        editor.update(() => {
-          const selection = $getSelection();
-          if ($isRangeSelection(selection)) {
-            $setBlocksType(selection, () => $createHeadingNode(format));
-            // console.log("setting font to " + format)
-          }
-        });
-      };
-
-    const supportedTextFormats = ['p', 'h1', 'h2', 'h3', 'h4'];
-
-    const [textFormatHint, setTextFormatHint] = useState('p');
-    const handleSetTextFormatHint = (format) => {
-        setTextFormatHint(format)
-    }
-
+function EditorToolbarMenu ({options, applyAction, icon}) {
+    const [hint, setHint] = useState(options[0][0]);
     const [anchorEl, setAnchorEl] = useState(null);
+
+    const handletHint = (item) => {
+        setHint(item)
+    }
 
     const handleMenu = (event) => {
         setAnchorEl(event.currentTarget);
@@ -101,24 +91,25 @@ function FontStyleMenu() {
         setAnchorEl(null);
     };
 
-    const handleMenuItemSelect = (format) => {
-        chooseFontStyle(format)
-        handleSetTextFormatHint(format)
+    const handleMenuItemSelect = (item) => {
+        applyAction(item[1])
+        handletHint(item[0])
         handleClose()
     }
 
     return (
         <>
             <Button
-                size="large"
+                size="medium"
                 aria-label="account of current user"
                 aria-controls="heading-toolbar"
                 aria-haspopup="true"
                 onClick={handleMenu}
                 color="inherit"
-                startIcon={<FormatSize />}
+                startIcon={icon}
+                sx={{ textTransform: 'none' }}
             >
-                {textFormatHint}
+                {hint}
             </Button>
             <Menu
                 id="menu-appbar"
@@ -135,13 +126,55 @@ function FontStyleMenu() {
                 open={Boolean(anchorEl)}
                 onClose={handleClose}
             >
-                {supportedTextFormats.map((format) => (
-                    <MenuItem key={format} onClick={() => handleMenuItemSelect(format)}>
-                        <Typography>{format}</Typography>
+                {options.map((item) => (
+                    <MenuItem key={item[1]} onClick={() => handleMenuItemSelect(item)}>
+                        <Typography>{item[0]}</Typography>
                     </MenuItem>
                 ))}
             </Menu>
         </>
+    )
+
+}
+
+function FontSizeEditorToolbarMenu() {
+
+    const [editor] = useLexicalComposerContext();
+    const applyAction = (item) => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            $setBlocksType(selection, () => $createHeadingNode(item));
+          }
+        });
+      };
+
+    const supportedTextFormats = [ 
+        ['Paragraph', 'p'], 
+        ['Large heading', 'h1'], 
+        ['Big heading', 'h2'], 
+        ['Medium heading', 'h3'], 
+        ['Small heading', 'h4']
+    ];
+
+    const icon = <FormatSize />
+    return (
+        <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction} icon={icon} ></EditorToolbarMenu>
+    )
+}
+
+function FontAlignmentEditorToolbarMenu() {
+
+    const supportedTextFormats = [ 
+        [<FormatAlignLeftIcon/>, 'left'], 
+        [<FormatAlignCenterIcon/>, 'center'], 
+        [<FormatAlignJustifyIcon/>, 'justify'],
+        [<FormatAlignRightIcon/>, 'right'], 
+    ];
+    const [editor] = useLexicalComposerContext();
+    const applyAction = (choice) => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, choice);
+    return (
+        <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction}  ></EditorToolbarMenu>
     )
 }
 
