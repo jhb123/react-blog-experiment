@@ -29,7 +29,7 @@ const Layout = () => {
         <AdminForm open={showingAdminPage} setOpen={setShowingAdminPage}/>
         <Container sx={{height : "100vh"}}>
             <Outlet />
-            {isAdmin ? <p1>is admin</p1> : <p1>not admin</p1>}
+            {isAdmin ? <p>is admin</p> : <p>not admin</p>}
         </Container>   
       </AdminContext.Provider>
     </>

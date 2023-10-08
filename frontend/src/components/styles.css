@@ -1,0 +1,31 @@
+.contentEditable {
+    border: 2px solid black;
+    border-radius: 5px;
+    height: 400px;
+    /* width: 80vw; */
+    padding: 10px
+}
+
+.editorWrapper {
+    position: relative;
+}
+
+.placeHolder {
+    position: absolute;
+    top: 92px;
+    left: 12px;
+    color: gray;
+}
+
+.blog-editor-h1 {
+
+}
+.blog-editor-h2 {
+
+}
+.blog-editor-h3 {
+
+}
+.blog-editor-h4 {
+
+}
