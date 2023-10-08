@@ -13,8 +13,9 @@ import { $createHeadingNode } from '@lexical/rich-text';
 import { HeadingNode } from '@lexical/rich-text';
 
 import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
+import Button from '@mui/material/Button';
 import FormatSize from '@mui/icons-material/FormatSize';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
@@ -26,21 +27,6 @@ const theme = {
         h3: 'blog-editor-h3',
         h4: 'blog-editor-h4'
       },
-}
-
-// Lexical React plugins are React components, which makes them
-// highly composable. Furthermore, you can lazy load plugins if
-// desired, so you don't pay the cost for plugins until you
-// actually use them.
-function MyCustomAutoFocusPlugin() {
-    const [editor] = useLexicalComposerContext();
-
-    useEffect(() => {
-        // Focus the editor when the effect fires!
-        editor.focus();
-    }, [editor]);
-
-    return null;
 }
 
 // Catch any errors that occur during Lexical updates and log them
@@ -100,6 +86,11 @@ function FontStyleMenu() {
 
     const supportedTextFormats = ['p', 'h1', 'h2', 'h3', 'h4'];
 
+    const [textFormatHint, setTextFormatHint] = useState('p');
+    const handleSetTextFormatHint = (format) => {
+        setTextFormatHint(format)
+    }
+
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleMenu = (event) => {
@@ -112,26 +103,28 @@ function FontStyleMenu() {
 
     const handleMenuItemSelect = (format) => {
         chooseFontStyle(format)
+        handleSetTextFormatHint(format)
         handleClose()
     }
 
     return (
         <>
-            <IconButton
+            <Button
                 size="large"
                 aria-label="account of current user"
                 aria-controls="heading-toolbar"
                 aria-haspopup="true"
                 onClick={handleMenu}
                 color="inherit"
+                startIcon={<FormatSize />}
             >
-                <FormatSize />
-            </IconButton>
+                {textFormatHint}
+            </Button>
             <Menu
                 id="menu-appbar"
                 anchorEl={anchorEl}
                 anchorOrigin={{
-                    vertical: 'top',
+                    vertical: 'bottom',
                     horizontal: 'right',
                 }}
                 keepMounted
@@ -143,10 +136,10 @@ function FontStyleMenu() {
                 onClose={handleClose}
             >
                 {supportedTextFormats.map((format) => (
-                    <MenuItem key={format} onClick={() => handleMenuItemSelect(format)}>{format}</MenuItem>
+                    <MenuItem key={format} onClick={() => handleMenuItemSelect(format)}>
+                        <Typography>{format}</Typography>
+                    </MenuItem>
                 ))}
-                {/* <MenuItem onClick={handleClose}>Profile</MenuItem> */}
-                {/* <MenuItem onClick={handleClose}>My account</MenuItem> */}
             </Menu>
         </>
     )
