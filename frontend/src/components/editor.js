@@ -22,6 +22,7 @@ import { TreeView } from "@lexical/react/LexicalTreeView";
 
 
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
@@ -38,10 +39,10 @@ import { ButtonGroup } from "@mui/material";
 
 const theme = {
     heading: {
-        h1: 'blog-editor-h1',
-        h2: 'blog-editor-h2',
-        h3: 'blog-editor-h3',
-        h4: 'blog-editor-h4'
+        h1: 'editor-h1',
+        h2: 'editor-h2',
+        h3: 'editor-h3',
+        h4: 'editor-h4'
       },
     text: {
         bold: 'editor-textBold',
@@ -75,7 +76,11 @@ function Editor() {
             <LexicalComposer initialConfig={initialConfig}>
                 <EditorToolbarPlugin />
                 <RichTextPlugin
-                    contentEditable={<ContentEditable className="contentEditable" onBlur={e => e.target.focus()}/>}
+                    contentEditable={
+                        <Paper elevation={3}>
+                            <ContentEditable className="contentEditable" />
+                        </Paper>
+                    }
                     placeholder={<div className="placeHolder">Enter some text...</div>}
                     ErrorBoundary={LexicalErrorBoundary}
                 />
@@ -191,9 +196,8 @@ function FontSizeEditorToolbarMenu() {
     const supportedTextFormats = [ 
         ['Paragraph', 'p'], 
         ['Large heading', 'h1'], 
-        ['Big heading', 'h2'], 
-        ['Medium heading', 'h3'], 
-        ['Small heading', 'h4']
+        ['Medium heading', 'h2'], 
+        ['Small heading', 'h3'], 
     ];
 
     const icon = <FormatSize />
@@ -213,7 +217,7 @@ function FontAlignmentEditorToolbarMenu() {
     const [editor] = useLexicalComposerContext();
     const applyAction = (choice) => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, choice);
     return (
-        <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction}  ></EditorToolbarMenu>
+        <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction} ></EditorToolbarMenu>
     )
 }
 
