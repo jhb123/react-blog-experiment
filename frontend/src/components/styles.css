@@ -1,5 +1,5 @@
 .contentEditable {
-    border: 2px solid black;
+    border: 1px solid #aaa;
     border-radius: 5px;
     height: 400px;
     /* width: 80vw; */
@@ -12,8 +12,8 @@
 
 .placeHolder {
     position: absolute;
-    top: 92px;
-    left: 12px;
+    top: 80px;
+    left: 11px;
     color: gray;
 }
 
@@ -29,3 +29,4 @@
 .blog-editor-h4 {
 
 }
+
