@@ -1,14 +1,23 @@
 import "./styles.css"
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback} from 'react';
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
+import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
-import {$isRangeSelection, $getSelection,   FORMAT_TEXT_COMMAND,
-    FORMAT_ELEMENT_COMMAND,} from 'lexical';
+import {
+    $isRangeSelection, 
+    $getSelection,
+    FORMAT_TEXT_COMMAND,
+    FORMAT_ELEMENT_COMMAND,
+    TextFormatType,
+} from 'lexical';
+import { mergeRegister } from '@lexical/utils';
+
+import { $getSelectionStyleValueForProperty}  from "@lexical/selection";
 import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode } from '@lexical/rich-text';
 import { HeadingNode } from '@lexical/rich-text';
@@ -17,7 +26,8 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
-import FormatBold from '@mui/icons-material/FormatBold';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
+import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatSize from '@mui/icons-material/FormatSize';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
@@ -54,7 +64,7 @@ function Editor() {
     return (
         <div className="editorWrapper">
             <LexicalComposer initialConfig={initialConfig}>
-                <EditorToolbar />
+                <EditorToolbarPlugin />
                 <RichTextPlugin
                     contentEditable={<ContentEditable className="contentEditable" onBlur={e => e.target.focus()}/>}
                     placeholder={<div className="placeHolder">Enter some text...</div>}
@@ -66,7 +76,31 @@ function Editor() {
     );
 }
 
-function EditorToolbar() {
+function EditorToolbarPlugin() {
+    
+    const [editor] = useLexicalComposerContext();
+    const [isBold, setIsBold] = useState(false);
+    const [isItalic, setIsItalic] = useState(false);
+
+    const updateToolbar = useCallback(() => {
+        const selection = $getSelection();
+        if ($isRangeSelection(selection)) {
+          setIsBold(selection.hasFormat('bold'));
+          setIsItalic(selection.hasFormat('italic'));
+
+        }
+      }, [editor]);
+
+    useEffect(() => {
+        return mergeRegister(
+        editor.registerUpdateListener(({ editorState }) => {
+            editorState.read(() => {
+            updateToolbar();
+            });
+        })
+        );
+    }, [updateToolbar, editor]);
+
     return (
         <Box
             display="flex" 
@@ -74,10 +108,11 @@ function EditorToolbar() {
             justifyContent="center" sx={{ p: 1 }}>
             {/* <Toolbar> */}
             {/* <Paper elevation={4}> */}
-                <ButtonGroup variant="outlined" size ="medium" color="dark">
+                <ButtonGroup variant="contained" size ="medium" color="tool">
                     <FontSizeEditorToolbarMenu />
                     <FontAlignmentEditorToolbarMenu />
-                    <BoldButton />
+                    <BoldToggle active={isBold}/>
+                    <ItalicToggle active={isItalic}/>
                 </ButtonGroup>
             {/* </Paper> */}
         </Box>
@@ -128,12 +163,35 @@ function FontAlignmentEditorToolbarMenu() {
 }
 
 
-function BoldButton () {
+function BoldToggle ({active}) {
     const [editor] = useLexicalComposerContext();
-    const onClick = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+    const formatCommand = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+    return (
+        <EditorToolbarToggle formatCommand={formatCommand} active={active}> 
+            <FormatBoldIcon/>
+        </EditorToolbarToggle>
+    )
+}
+
+function ItalicToggle ({active}) {
+    const [editor] = useLexicalComposerContext();
+    const formatCommand = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+    
+    return (
+        <EditorToolbarToggle formatCommand={formatCommand} active={active}>
+            <FormatItalicIcon/>
+        </EditorToolbarToggle>
+    )
+}
+
+function EditorToolbarToggle ({formatCommand, active ,children}) {
+
+    const onClick = () => {
+        formatCommand()
+    }
 
     return (
-        <Button onClick={onClick}><FormatBold /></Button>
+        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>{children}</Button>
     )
 }
 

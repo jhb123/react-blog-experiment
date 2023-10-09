@@ -11,8 +11,14 @@ const theme = createTheme({
         dark: '#A29415',
         contrastText: '#242105',
       },
-      dark: {
-        main: '#444',
+      tool: {
+        main: '#555',
+        light: '#777',
+        dark: '#111',
+        contrastText: '#eee',
+      },
+      toolVariant: {
+        main: '#222',
         light: '#777',
         dark: '#111',
         contrastText: '#eee',
