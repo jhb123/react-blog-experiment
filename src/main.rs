@@ -8,7 +8,7 @@ use rocket::response::content;
 use rocket_blog::authentication::routes::{admin_login, sensitive};
 use rocket_blog::articles::routes::{
     post_upload_article_image, put_upload_article_image,
-     get_article_image, get_article,put_article,stage};
+     get_article_image,stage};
 use sqlx::MySqlPool;
 
 #[launch]
@@ -16,7 +16,7 @@ async fn rocket() ->  _ {
 
     rocket::build()
         .mount("/", routes![index,react_build, admin_login, sensitive])
-        .mount("/articles", routes![post_upload_article_image, put_upload_article_image, get_article_image,get_article, put_article])
+        .mount("/articles", routes![post_upload_article_image, put_upload_article_image, get_article_image])
         .attach(stage())
 
 }

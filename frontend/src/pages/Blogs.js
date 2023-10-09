@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
 
-import Editor from "../components/editor";
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Paper from '@mui/material/Paper';
@@ -54,7 +53,6 @@ Where me and my true love were ever wont to gae,\
         )}
       </Grid>
 
-      <Editor/>
     </>
     )
   };
