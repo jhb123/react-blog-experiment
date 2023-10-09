@@ -12,6 +12,7 @@ import {
     $getSelection,
     FORMAT_TEXT_COMMAND,
     FORMAT_ELEMENT_COMMAND,
+    $createParagraphNode,
 } from 'lexical';
 import { mergeRegister } from '@lexical/utils';
 import { $setBlocksType } from '@lexical/selection';
@@ -26,6 +27,7 @@ import Button from '@mui/material/Button';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatSize from '@mui/icons-material/FormatSize';
+import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
@@ -89,12 +91,14 @@ function EditorToolbarPlugin() {
     const [editor] = useLexicalComposerContext();
     const [isBold, setIsBold] = useState(false);
     const [isItalic, setIsItalic] = useState(false);
+    const [isUnderlined, setIsUnderlined] = useState(false);
 
     const updateToolbar = useCallback(() => {
         const selection = $getSelection();
         if ($isRangeSelection(selection)) {
           setIsBold(selection.hasFormat('bold'));
           setIsItalic(selection.hasFormat('italic'));
+          setIsUnderlined(selection.hasFormat('underline'));
 
         }
       }, [editor]);
@@ -119,11 +123,52 @@ function EditorToolbarPlugin() {
                 <FontAlignmentEditorToolbarMenu />
                 <BoldToggle active={isBold}/>
                 <ItalicToggle active={isItalic}/>
+                <UnderlineToggle active={isUnderlined}/>
             </ButtonGroup>
         </Box>
     );
 }
 
+/*--------------------------- simple toggles ---------------------------*/
+
+function UnderlineToggle ({active}) {
+    const [editor] = useLexicalComposerContext();
+    const onClick = () => {
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
+    }
+    return (
+        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
+            <FormatUnderlinedIcon/>
+        </Button>
+    )
+}
+
+function BoldToggle ({active}) {
+    const [editor] = useLexicalComposerContext();
+    const onClick = () => {
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
+    }
+    return (
+        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
+            <FormatBoldIcon/>
+        </Button>
+    )
+}
+
+function ItalicToggle ({active}) {
+    const [editor] = useLexicalComposerContext();
+    const onClick = () => {
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
+    }
+    
+    return (
+        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
+            <FormatItalicIcon/>
+        </Button>
+    )
+}
+
+/*--------------------------- fancy menus ---------------------------*/
 
 
 function FontSizeEditorToolbarMenu() {
@@ -133,7 +178,12 @@ function FontSizeEditorToolbarMenu() {
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            $setBlocksType(selection, () => $createHeadingNode(item));
+            if(item === 'p'){
+                $setBlocksType(selection, () => $createParagraphNode(item));
+            }
+            else {
+                $setBlocksType(selection, () => $createHeadingNode(item));
+            }
           }
         });
       };
@@ -164,41 +214,6 @@ function FontAlignmentEditorToolbarMenu() {
     const applyAction = (choice) => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, choice);
     return (
         <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction}  ></EditorToolbarMenu>
-    )
-}
-
-
-function BoldToggle ({active}) {
-    const [editor] = useLexicalComposerContext();
-    const formatCommand = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
-    return (
-        <EditorToolbarToggle formatCommand={formatCommand} active={active}> 
-            <FormatBoldIcon/>
-        </EditorToolbarToggle>
-    )
-}
-
-function ItalicToggle ({active}) {
-    const [editor] = useLexicalComposerContext();
-    const formatCommand = () => {
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
-    }
-    
-    return (
-        <EditorToolbarToggle formatCommand={formatCommand} active={active}>
-            <FormatItalicIcon/>
-        </EditorToolbarToggle>
-    )
-}
-
-function EditorToolbarToggle ({formatCommand, active ,children}) {
-
-    const onClick = () => {
-        formatCommand()
-    }
-
-    return (
-        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>{children}</Button>
     )
 }
 

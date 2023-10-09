@@ -49,6 +49,7 @@
 
 }
 .editor-textUnderline {
+    text-decoration: underline;
 
 }
 .editor-textUnderlineStrikethrough {
