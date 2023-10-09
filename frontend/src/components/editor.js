@@ -2,7 +2,6 @@ import "./styles.css"
 import { useEffect, useState, useCallback} from 'react';
 
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
-import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
@@ -13,18 +12,16 @@ import {
     $getSelection,
     FORMAT_TEXT_COMMAND,
     FORMAT_ELEMENT_COMMAND,
-    TextFormatType,
 } from 'lexical';
 import { mergeRegister } from '@lexical/utils';
-
-import { $getSelectionStyleValueForProperty}  from "@lexical/selection";
 import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode } from '@lexical/rich-text';
 import { HeadingNode } from '@lexical/rich-text';
+import { TreeView } from "@lexical/react/LexicalTreeView";
+
 
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
-import Toolbar from '@mui/material/Toolbar';
 import Button from '@mui/material/Button';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
@@ -35,7 +32,7 @@ import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
-import { ButtonGroup, IconButton, Paper } from "@mui/material";
+import { ButtonGroup } from "@mui/material";
 
 const theme = {
     heading: {
@@ -44,6 +41,16 @@ const theme = {
         h3: 'blog-editor-h3',
         h4: 'blog-editor-h4'
       },
+    text: {
+        bold: 'editor-textBold',
+        code: 'editor-textCode',
+        italic: 'editor-textItalic',
+        strikethrough: 'editor-textStrikethrough',
+        subscript: 'editor-textSubscript',
+        superscript: 'editor-textSuperscript',
+        underline: 'editor-textUnderline',
+        underlineStrikethrough: 'editor-textUnderlineStrikethrough',
+    },
 }
 
 // Catch any errors that occur during Lexical updates and log them
@@ -71,6 +78,7 @@ function Editor() {
                     ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
+                <TreeViewPlugin/>
             </LexicalComposer>
         </div>
     );
@@ -106,15 +114,12 @@ function EditorToolbarPlugin() {
             display="flex" 
             alignItems="center"
             justifyContent="center" sx={{ p: 1 }}>
-            {/* <Toolbar> */}
-            {/* <Paper elevation={4}> */}
-                <ButtonGroup variant="contained" size ="medium" color="tool">
-                    <FontSizeEditorToolbarMenu />
-                    <FontAlignmentEditorToolbarMenu />
-                    <BoldToggle active={isBold}/>
-                    <ItalicToggle active={isItalic}/>
-                </ButtonGroup>
-            {/* </Paper> */}
+            <ButtonGroup variant="contained" size ="medium" color="tool">
+                <FontSizeEditorToolbarMenu />
+                <FontAlignmentEditorToolbarMenu />
+                <BoldToggle active={isBold}/>
+                <ItalicToggle active={isItalic}/>
+            </ButtonGroup>
         </Box>
     );
 }
@@ -165,7 +170,7 @@ function FontAlignmentEditorToolbarMenu() {
 
 function BoldToggle ({active}) {
     const [editor] = useLexicalComposerContext();
-    const formatCommand = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold');
+    const formatCommand = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
     return (
         <EditorToolbarToggle formatCommand={formatCommand} active={active}> 
             <FormatBoldIcon/>
@@ -175,7 +180,9 @@ function BoldToggle ({active}) {
 
 function ItalicToggle ({active}) {
     const [editor] = useLexicalComposerContext();
-    const formatCommand = () => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic');
+    const formatCommand = () => {
+        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
+    }
     
     return (
         <EditorToolbarToggle formatCommand={formatCommand} active={active}>
@@ -251,5 +258,21 @@ function EditorToolbarMenu ({options, applyAction, icon}) {
         </>
     )
 }
+
+
+function TreeViewPlugin() {
+  const [editor] = useLexicalComposerContext();
+  return (
+    <TreeView
+      viewClassName="tree-view-output"
+      timeTravelPanelClassName="debug-timetravel-panel"
+      timeTravelButtonClassName="debug-timetravel-button"
+      timeTravelPanelSliderClassName="debug-timetravel-panel-slider"
+      timeTravelPanelButtonClassName="debug-timetravel-panel-button"
+      editor={editor}
+    />
+  );
+}
+
 
 export default Editor

@@ -30,3 +30,27 @@
 
 }
 
+.editor-textBold {
+    font-weight: bold;
+}
+.editor-textCode {
+
+}
+.editor-textItalic {
+    font-style: italic;
+}
+.editor-textStrikethrough {
+
+}
+.editor-textSubscript {
+
+}
+.editor-textSuperscript {
+
+}
+.editor-textUnderline {
+
+}
+.editor-textUnderlineStrikethrough {
+
+}
