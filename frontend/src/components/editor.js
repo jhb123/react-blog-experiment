@@ -1,5 +1,5 @@
 import "./styles.css"
-import { useEffect, useState, useCallback} from 'react';
+import { useEffect, useState, useCallback, useRef} from 'react';
 import Image from 'react'
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
@@ -156,22 +156,55 @@ function InsertImageTest () {
     editor.registerCommand(
         INSERT_IMAGE_COMMAND,
         (payload) => {
-          console.log(payload);
-          const imageNode = $createImageNode(payload);
+          const imageNode = $createImageNode("image", payload);
           $insertNodes([imageNode]);
           return false;
         },
         COMMAND_PRIORITY_LOW,
       );
 
-    
-    const onClick = () => {
-        editor.dispatchCommand(INSERT_IMAGE_COMMAND,"test payload");
-        
+    const selectImage = () => {
+        // return( <Button>New</Button>);
     }
+    const inputFile = useRef(null) 
+
+    const onClick = () => {
+        // selectImage()
+        inputFile.current.click();
+        // editor.dispatchCommand(INSERT_IMAGE_COMMAND,"test payload");
+    }
+
+    const handleFileChange = event => {
+        const fileObj = event.target.files && event.target.files[0];
+        if (!fileObj) {
+          return;
+        }
+        
+        event.target.value = null;
+            
+        const reader = new FileReader();
+        reader.addEventListener("load", function () {
+            // convert image file to base64 string and save to localStorage
+            localStorage.setItem(fileObj.name,reader.result);
+            editor.dispatchCommand(INSERT_IMAGE_COMMAND,fileObj.name);
+
+        }, false);
+
+        reader.readAsDataURL(fileObj);
+        
+
+      };
+
     return (
         <Button onClick={onClick} color={"tool"}>
             <Typography>Insert Image</Typography>
+            <input 
+                type='file' 
+                id='file' 
+                ref={inputFile} 
+                style={{display: 'none'}}
+                onChange={handleFileChange}
+                accept="image/png, image/jpeg"/>
         </Button>
     )
 }
@@ -364,12 +397,14 @@ export class ImageNode extends DecoratorNode {
     }
   
     static clone(node) {
-      return new ImageNode(node.__id, node.__key);
+      return new ImageNode(node.__id, node.__fname , node.__key);
     }
   
-    constructor(id, key) {
+    constructor(id, imgData, key) {
       super(key);
       this.__id = id;
+      this.__fname = imgData;
+      this.__imgData = localStorage.getItem(imgData);
     }
   
     createDOM() {
@@ -382,14 +417,15 @@ export class ImageNode extends DecoratorNode {
     }
   
     decorate() {
-        // temporary image to test the editor. 
-        return <img className="editor-image" src={landscape} alt="Loch Lomond"/>;
+        // temporary image to test the editor.
+        console.log("drawing " + this.__fname)
+        return <img className="editor-image" src={this.__imgData} alt="Loch Lomond"/>;
     }
   }
   
   // these probably dont need exporting
-  export function $createImageNode(id) {
-    return new ImageNode(id);
+  export function $createImageNode(id, imgData) {
+    return new ImageNode(id, imgData);
   }
   export function $isImageNode(node) {
     return node instanceof ImageNode;
