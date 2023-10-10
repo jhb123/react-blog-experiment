@@ -35,6 +35,15 @@
     font-weight: bold;
 }
 .editor-textCode {
+    font-family: monospace;
+    font-size: 1rem;
+    background: #ddd;
+    border-radius: 3px;
+    padding-left: 3px;
+    padding-right: 3px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin: 0;
 
 }
 .editor-textItalic {
@@ -55,4 +64,8 @@
 }
 .editor-textUnderlineStrikethrough {
 
+}
+
+.editor-image {
+    max-width: 150px;
 }

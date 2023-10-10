@@ -1,6 +1,6 @@
 import "./styles.css"
 import { useEffect, useState, useCallback} from 'react';
-
+import Image from 'react'
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -13,10 +13,15 @@ import {
     FORMAT_TEXT_COMMAND,
     FORMAT_ELEMENT_COMMAND,
     $createParagraphNode,
+    $createTextNode,
+    $insertNodes,
+    createCommand,
+    DecoratorNode,
+    COMMAND_PRIORITY_LOW,
 } from 'lexical';
 import { mergeRegister } from '@lexical/utils';
 import { $setBlocksType } from '@lexical/selection';
-import { $createHeadingNode } from '@lexical/rich-text';
+import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
 import { HeadingNode } from '@lexical/rich-text';
 import { TreeView } from "@lexical/react/LexicalTreeView";
 
@@ -28,6 +33,7 @@ import Button from '@mui/material/Button';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatSize from '@mui/icons-material/FormatSize';
+import FormatCodeIcon from '@mui/icons-material/Code';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
@@ -36,6 +42,8 @@ import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { ButtonGroup } from "@mui/material";
+
+import landscape from "../images/large.jpeg"
 
 const theme = {
     heading: {
@@ -68,7 +76,7 @@ function Editor() {
         namespace: 'MyEditor',
         theme,
         onError,
-        nodes: [HeadingNode]
+        nodes: [HeadingNode, ImageNode]
     };
 
     return (
@@ -97,6 +105,7 @@ function EditorToolbarPlugin() {
     const [isBold, setIsBold] = useState(false);
     const [isItalic, setIsItalic] = useState(false);
     const [isUnderlined, setIsUnderlined] = useState(false);
+    const [isCode, setIsCode] = useState(false);
 
     const updateToolbar = useCallback(() => {
         const selection = $getSelection();
@@ -104,7 +113,7 @@ function EditorToolbarPlugin() {
           setIsBold(selection.hasFormat('bold'));
           setIsItalic(selection.hasFormat('italic'));
           setIsUnderlined(selection.hasFormat('underline'));
-
+          setIsCode(selection.hasFormat('code'));
         }
       }, [editor]);
 
@@ -129,12 +138,62 @@ function EditorToolbarPlugin() {
                 <BoldToggle active={isBold}/>
                 <ItalicToggle active={isItalic}/>
                 <UnderlineToggle active={isUnderlined}/>
+                <CodeToggle active={isCode}/>
+                <InsertImageTest />
             </ButtonGroup>
         </Box>
     );
 }
 
+/*--------------------------- Image test ---------------------------*/
+
+function InsertImageTest () {
+    
+    const INSERT_IMAGE_COMMAND = createCommand();
+
+    const [editor] = useLexicalComposerContext();
+
+    editor.registerCommand(
+        INSERT_IMAGE_COMMAND,
+        (payload) => {
+          console.log(payload);
+          const imageNode = $createImageNode(payload);
+          $insertNodes([imageNode]);
+          return false;
+        },
+        COMMAND_PRIORITY_LOW,
+      );
+
+    
+    const onClick = () => {
+        editor.dispatchCommand(INSERT_IMAGE_COMMAND,"test payload");
+        
+    }
+    return (
+        <Button onClick={onClick} color={"tool"}>
+            <Typography>Insert Image</Typography>
+        </Button>
+    )
+}
+
+
 /*--------------------------- simple toggles ---------------------------*/
+
+function CodeToggle ({active}) {
+    const [editor] = useLexicalComposerContext();
+    const onClick = () => {
+        editor.update(() => {
+            const onClick = () => {
+                editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
+            }
+          });
+    }
+    return (
+        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
+            <FormatCodeIcon/>
+        </Button>
+    )
+}
 
 function UnderlineToggle ({active}) {
     const [editor] = useLexicalComposerContext();
@@ -292,6 +351,51 @@ function TreeViewPlugin() {
     />
   );
 }
+
+/*--------------------------- image node ---------------------------*/
+
+export class ImageNode extends DecoratorNode {
+    // essentially copied from the documentation
+
+    __id;
+  
+    static getType() {
+      return 'image';
+    }
+  
+    static clone(node) {
+      return new ImageNode(node.__id, node.__key);
+    }
+  
+    constructor(id, key) {
+      super(key);
+      this.__id = id;
+    }
+  
+    createDOM() {
+        // this puts the image in a span. This feels like a nicer way to edit the document
+        return document.createElement('span');
+    }
+  
+    updateDOM() {
+      return false;
+    }
+  
+    decorate() {
+        // temporary image to test the editor. 
+        return <img className="editor-image" src={landscape} alt="Loch Lomond"/>;
+    }
+  }
+  
+  // these probably dont need exporting
+  export function $createImageNode(id) {
+    return new ImageNode(id);
+  }
+  export function $isImageNode(node) {
+    return node instanceof ImageNode;
+  }
+
+
 
 
 export default Editor
