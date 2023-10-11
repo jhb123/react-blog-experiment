@@ -1,6 +1,6 @@
 .contentEditable {
     border-radius: 5px;
-    height: 400px;
+    min-height: 400px;
     outline: 0;
 
     /* width: 80vw; */
