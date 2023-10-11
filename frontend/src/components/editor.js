@@ -5,6 +5,11 @@ import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
+import { AutoLinkPlugin } from '@lexical/react/LexicalAutoLinkPlugin';
+import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
+
+import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
+
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import {
@@ -24,6 +29,7 @@ import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
 import { HeadingNode } from '@lexical/rich-text';
 import { TreeView } from "@lexical/react/LexicalTreeView";
+import { AutoLinkNode, LinkNode } from "@lexical/link"
 
 
 import Box from '@mui/material/Box';
@@ -39,9 +45,14 @@ import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
 import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
+import LinkIcon from '@mui/icons-material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
 import { ButtonGroup } from "@mui/material";
+
+import { BoldToggle, CodeToggle, ItalicToggle, UnderlineToggle } from "./editor-toggles"
+import EditorToolbarPlugin from "./EditorToolbarPlugin";
+import { ImageNode } from "./ImagePlugin";
 
 import landscape from "../images/large.jpeg"
 
@@ -76,7 +87,7 @@ function Editor() {
         namespace: 'MyEditor',
         theme,
         onError,
-        nodes: [HeadingNode, ImageNode]
+        nodes: [HeadingNode, ImageNode, LinkNode, AutoLinkNode]
     };
 
     return (
@@ -93,183 +104,21 @@ function Editor() {
                     ErrorBoundary={LexicalErrorBoundary}
                 />
                 <HistoryPlugin />
-                <TreeViewPlugin/>
+                <LinkPlugin />
+
+                {/* <AutoLinkPlugin /> */}
+                <TabIndentationPlugin/>
             </LexicalComposer>
         </div>
     );
 }
 
-function EditorToolbarPlugin() {
-    
-    const [editor] = useLexicalComposerContext();
-    const [isBold, setIsBold] = useState(false);
-    const [isItalic, setIsItalic] = useState(false);
-    const [isUnderlined, setIsUnderlined] = useState(false);
-    const [isCode, setIsCode] = useState(false);
-
-    const updateToolbar = useCallback(() => {
-        const selection = $getSelection();
-        if ($isRangeSelection(selection)) {
-          setIsBold(selection.hasFormat('bold'));
-          setIsItalic(selection.hasFormat('italic'));
-          setIsUnderlined(selection.hasFormat('underline'));
-          setIsCode(selection.hasFormat('code'));
-        }
-      }, [editor]);
-
-    useEffect(() => {
-        return mergeRegister(
-        editor.registerUpdateListener(({ editorState }) => {
-            editorState.read(() => {
-            updateToolbar();
-            });
-        })
-        );
-    }, [updateToolbar, editor]);
-
-    return (
-        <Box
-            display="flex" 
-            alignItems="center"
-            justifyContent="center" sx={{ p: 1 }}>
-            <ButtonGroup variant="contained" size ="medium" color="tool">
-                <FontSizeEditorToolbarMenu />
-                <FontAlignmentEditorToolbarMenu />
-                <BoldToggle active={isBold}/>
-                <ItalicToggle active={isItalic}/>
-                <UnderlineToggle active={isUnderlined}/>
-                <CodeToggle active={isCode}/>
-                <InsertImageTest />
-            </ButtonGroup>
-        </Box>
-    );
-}
-
 /*--------------------------- Image test ---------------------------*/
 
-function InsertImageTest () {
-    
-    const INSERT_IMAGE_COMMAND = createCommand();
 
-    const [editor] = useLexicalComposerContext();
+/* -------------------------- link ----------------------------------*/
 
-    editor.registerCommand(
-        INSERT_IMAGE_COMMAND,
-        (payload) => {
-          const imageNode = $createImageNode("image", payload);
-          $insertNodes([imageNode]);
-          return false;
-        },
-        COMMAND_PRIORITY_LOW,
-      );
-
-    const selectImage = () => {
-        // return( <Button>New</Button>);
-    }
-    const inputFile = useRef(null) 
-
-    const onClick = () => {
-        // selectImage()
-        inputFile.current.click();
-        // editor.dispatchCommand(INSERT_IMAGE_COMMAND,"test payload");
-    }
-
-    const handleFileChange = event => {
-        const fileObj = event.target.files && event.target.files[0];
-        if (!fileObj) {
-          return;
-        }
-        
-        event.target.value = null;
-            
-        const reader = new FileReader();
-        reader.addEventListener("load", function () {
-            // convert image file to base64 string and save to localStorage
-            localStorage.setItem(fileObj.name,reader.result);
-            editor.dispatchCommand(INSERT_IMAGE_COMMAND,fileObj.name);
-
-        }, false);
-
-        reader.readAsDataURL(fileObj);
-        
-
-      };
-
-    return (
-        <Button onClick={onClick} color={"tool"}>
-            <Typography>Insert Image</Typography>
-            <input 
-                type='file' 
-                id='file' 
-                ref={inputFile} 
-                style={{display: 'none'}}
-                onChange={handleFileChange}
-                accept="image/png, image/jpeg"/>
-        </Button>
-    )
-}
-
-
-/*--------------------------- simple toggles ---------------------------*/
-
-function CodeToggle ({active}) {
-    const [editor] = useLexicalComposerContext();
-    const onClick = () => {
-        editor.update(() => {
-            const onClick = () => {
-                editor.dispatchCommand(FORMAT_TEXT_COMMAND, "code");
-            }
-          });
-    }
-    return (
-        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
-            <FormatCodeIcon/>
-        </Button>
-    )
-}
-
-function UnderlineToggle ({active}) {
-    const [editor] = useLexicalComposerContext();
-    const onClick = () => {
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "underline");
-    }
-    return (
-        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
-            <FormatUnderlinedIcon/>
-        </Button>
-    )
-}
-
-function BoldToggle ({active}) {
-    const [editor] = useLexicalComposerContext();
-    const onClick = () => {
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
-    }
-    return (
-        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
-            <FormatBoldIcon/>
-        </Button>
-    )
-}
-
-function ItalicToggle ({active}) {
-    const [editor] = useLexicalComposerContext();
-    const onClick = () => {
-        editor.dispatchCommand(FORMAT_TEXT_COMMAND, "italic");
-    }
-    
-    return (
-        <Button onClick={onClick} color={ active ? "toolVariant" : "tool"}>
-            <FormatItalicIcon/>
-        </Button>
-    )
-}
-
-/*--------------------------- fancy menus ---------------------------*/
-
-
-function FontSizeEditorToolbarMenu() {
-
+function LinkButton() {
     const [editor] = useLexicalComposerContext();
     const applyAction = (item) => {
         editor.update(() => {
@@ -285,90 +134,16 @@ function FontSizeEditorToolbarMenu() {
         });
       };
 
-    const supportedTextFormats = [ 
-        ['Paragraph', 'p'], 
-        ['Large heading', 'h1'], 
-        ['Medium heading', 'h2'], 
-        ['Small heading', 'h3'], 
-    ];
-
-    const icon = <FormatSize />
-    return (
-        <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction} icon={icon} ></EditorToolbarMenu>
-    )
+      return (
+        <Button >
+            <LinkIcon />
+        </Button>
+      )
 }
 
-function FontAlignmentEditorToolbarMenu() {
+/*--------------------------- fancy menus ---------------------------*/
 
-    const supportedTextFormats = [ 
-        [<FormatAlignLeftIcon/>, 'left'], 
-        [<FormatAlignCenterIcon/>, 'center'], 
-        [<FormatAlignJustifyIcon/>, 'justify'],
-        [<FormatAlignRightIcon/>, 'right'], 
-    ];
-    const [editor] = useLexicalComposerContext();
-    const applyAction = (choice) => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, choice);
-    return (
-        <EditorToolbarMenu options={supportedTextFormats} applyAction={applyAction} ></EditorToolbarMenu>
-    )
-}
 
-function EditorToolbarMenu ({options, applyAction, icon}) {
-    const [hint, setHint] = useState(options[0][0]);
-    const [anchorEl, setAnchorEl] = useState(null);
-
-    const handletHint = (item) => {
-        setHint(item)
-    }
-
-    const handleMenu = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleMenuItemSelect = (item) => {
-        applyAction(item[1])
-        handletHint(item[0])
-        handleClose()
-    }
-
-    return (
-        <>
-            <Button
-                aria-haspopup="true"
-                onClick={handleMenu}
-                startIcon={icon}
-                sx={{ textTransform: 'none' }}
-            >
-                {hint}
-            </Button>
-            <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-            >
-                {options.map((item) => (
-                    <MenuItem key={item[1]} onClick={() => handleMenuItemSelect(item)}>
-                        <Typography>{item[0]}</Typography>
-                    </MenuItem>
-                ))}
-            </Menu>
-        </>
-    )
-}
 
 
 function TreeViewPlugin() {
@@ -387,49 +162,6 @@ function TreeViewPlugin() {
 
 /*--------------------------- image node ---------------------------*/
 
-export class ImageNode extends DecoratorNode {
-    // essentially copied from the documentation
-
-    __id;
-  
-    static getType() {
-      return 'image';
-    }
-  
-    static clone(node) {
-      return new ImageNode(node.__id, node.__fname , node.__key);
-    }
-  
-    constructor(id, imgData, key) {
-      super(key);
-      this.__id = id;
-      this.__fname = imgData;
-      this.__imgData = localStorage.getItem(imgData);
-    }
-  
-    createDOM() {
-        // this puts the image in a span. This feels like a nicer way to edit the document
-        return document.createElement('span');
-    }
-  
-    updateDOM() {
-      return false;
-    }
-  
-    decorate() {
-        // temporary image to test the editor.
-        console.log("drawing " + this.__fname)
-        return <img className="editor-image" src={this.__imgData} alt="Loch Lomond"/>;
-    }
-  }
-  
-  // these probably dont need exporting
-  export function $createImageNode(id, imgData) {
-    return new ImageNode(id, imgData);
-  }
-  export function $isImageNode(node) {
-    return node instanceof ImageNode;
-  }
 
 
 
