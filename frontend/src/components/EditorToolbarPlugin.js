@@ -4,14 +4,18 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import {
     $isRangeSelection, 
     $getSelection,
-
+    $createParagraphNode,
 } from 'lexical';
+import { $setBlocksType } from '@lexical/selection';
+import { $createHeadingNode, $createQuoteNode } from '@lexical/rich-text';
 import { mergeRegister } from '@lexical/utils';
 
 
 
 import Box from '@mui/material/Box';
 import { ButtonGroup } from "@mui/material";
+import Button from '@mui/material/Button';
+import LinkIcon from '@mui/icons-material/Link';
 
 import { BoldToggle, CodeToggle, ItalicToggle, UnderlineToggle } from "./editor-toggles"
 import { InsertImageTest } from './ImagePlugin';
@@ -61,6 +65,29 @@ function EditorToolbarPlugin() {
             </ButtonGroup>
         </Box>
     );
+}
+
+function LinkButton() {
+    const [editor] = useLexicalComposerContext();
+    const applyAction = (item) => {
+        editor.update(() => {
+          const selection = $getSelection();
+          if ($isRangeSelection(selection)) {
+            if(item === 'p'){
+                $setBlocksType(selection, () => $createParagraphNode(item));
+            }
+            else {
+                $setBlocksType(selection, () => $createHeadingNode(item));
+            }
+          }
+        });
+      };
+
+      return (
+        <Button >
+            <LinkIcon />
+        </Button>
+      )
 }
 
 export default EditorToolbarPlugin
