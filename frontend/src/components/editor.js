@@ -37,6 +37,8 @@ const theme = {
         underline: 'editor-textUnderline',
         underlineStrikethrough: 'editor-textUnderlineStrikethrough',
     },
+    link: 'editor-link',
+
 }
 
 // Catch any errors that occur during Lexical updates and log them
@@ -69,7 +71,7 @@ function Editor() {
                 />
                 <HistoryPlugin />
                 <LinkPlugin />
-
+                <TreeViewPlugin />
                 {/* <AutoLinkPlugin /> */}
                 <TabIndentationPlugin/>
             </LexicalComposer>

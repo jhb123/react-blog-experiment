@@ -69,3 +69,7 @@
 .editor-image {
     max-width: 150px;
 }
+
+.editor-link {
+    color: green
+}
