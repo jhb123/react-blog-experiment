@@ -4,14 +4,14 @@ import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
-
+import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
-
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HeadingNode } from '@lexical/rich-text';
 import { TreeView } from "@lexical/react/LexicalTreeView";
-import { AutoLinkNode, LinkNode } from "@lexical/link"
+import { LinkNode } from "@lexical/link"
+import { ListItemNode, ListNode } from "@lexical/list"
 
 
 import Paper from '@mui/material/Paper';
@@ -53,7 +53,7 @@ function Editor() {
         namespace: 'MyEditor',
         theme,
         onError,
-        nodes: [HeadingNode, ImageNode, LinkNode, AutoLinkNode]
+        nodes: [HeadingNode, ImageNode, LinkNode, ListNode, ListItemNode]
     };
 
     return (
@@ -72,8 +72,8 @@ function Editor() {
                 <HistoryPlugin />
                 <LinkPlugin />
                 <TreeViewPlugin />
-                {/* <AutoLinkPlugin /> */}
                 <TabIndentationPlugin/>
+                <ListPlugin />
             </LexicalComposer>
         </div>
     );

@@ -9,6 +9,7 @@ import {
 } from 'lexical';
 import { $setBlocksType } from '@lexical/selection';
 import { $createHeadingNode } from '@lexical/rich-text';
+import { $createListNode } from '@lexical/list';
 
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -28,11 +29,15 @@ export function FontSizeEditorToolbarMenu() {
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
-            if(item === 'p'){
-                $setBlocksType(selection, () => $createParagraphNode(item));
-            }
-            else {
-                $setBlocksType(selection, () => $createHeadingNode(item));
+            switch(item){
+                case 'p': $setBlocksType(selection, () => $createParagraphNode(item));
+                case 'h1': $setBlocksType(selection, () => $createHeadingNode(item));
+                case 'h2': $setBlocksType(selection, () => $createHeadingNode(item));
+                case 'h3': $setBlocksType(selection, () => $createHeadingNode(item));
+                case 'h4': $setBlocksType(selection, () => $createHeadingNode(item));
+                case 'bullet' : $setBlocksType(selection, () => $createListNode(item));
+                case 'number' : $setBlocksType(selection, () => $createListNode(item));
+                // default: $setBlocksType(selection, () => $createParagraphNode(item));
             }
           }
         });
@@ -42,7 +47,10 @@ export function FontSizeEditorToolbarMenu() {
         ['Paragraph', 'p'], 
         ['Large heading', 'h1'], 
         ['Medium heading', 'h2'], 
-        ['Small heading', 'h3'], 
+        ['Small heading', 'h3'],
+        ['Bulleted List', 'bullet'],
+        ['Numbered List', 'number'],
+
     ];
 
     const icon = <FormatSize />
