@@ -1,5 +1,5 @@
 import "./styles.css"
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 
 
@@ -13,6 +13,8 @@ import {
 
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+
 
 export function InsertImageTest() {
 
@@ -106,9 +108,7 @@ export class ImageNode extends DecoratorNode {
   }
 
   decorate() {
-    // temporary image to test the editor.
-    console.log("drawing " + this.__fname)
-    return <img className="editor-image" src={this.__imgData} alt="Loch Lomond" />;
+    return <ResizableImage className="editor-image" src={this.__imgData} alt="Loch Lomond" />
   }
 }
 
@@ -117,4 +117,38 @@ export function $createImageNode(id, imgData) {
 }
 export function $isImageNode(node) {
   return node instanceof ImageNode;
+}
+
+function ResizableImage({isEditable = true, src, alt}) {
+  
+  const [scale, setScale] = useState(1);
+
+  const numWidths = 5
+
+  const onClick = () => {
+    if(!isEditable){
+      return
+    }
+    
+    var newScale = (scale+1)
+    if(newScale%(numWidths+1) ===0){
+      setScale(1);
+    }
+    else{
+      setScale(newScale);
+    }
+  }
+
+  const calculateWidth = () => {
+    return 100*scale/numWidths+"%"
+  }
+
+  return(
+    <>
+      <Box sx={{width: calculateWidth()}}>
+        <img draggable="false" className="editor-image" src={src} alt={alt} onClick={onClick}/>
+      </Box>
+  </>
+  )
+  
 }
