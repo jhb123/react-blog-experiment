@@ -123,13 +123,13 @@ function ResizableImage({isEditable = true, src, alt}) {
   
   const [scale, setScale] = useState(1);
 
-  const numWidths = 5
+  const numWidths = 4
 
   const onClick = () => {
     if(!isEditable){
       return
     }
-    
+
     var newScale = (scale+1)
     if(newScale%(numWidths+1) ===0){
       setScale(1);
@@ -145,10 +145,8 @@ function ResizableImage({isEditable = true, src, alt}) {
 
   return(
     <>
-      <Box sx={{width: calculateWidth()}}>
-        <img draggable="false" className="editor-image" src={src} alt={alt} onClick={onClick}/>
-      </Box>
-  </>
+      <img width={calculateWidth()} draggable="false" src={src} alt={alt} onClick={onClick}/>
+    </>
   )
   
 }
