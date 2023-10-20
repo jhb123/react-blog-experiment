@@ -3,6 +3,7 @@ use std::io::Write;
 use dialoguer::{theme::ColorfulTheme, Select, Password};
 use rand::{Rng, distributions::Alphanumeric};
 use sha2::{Sha256, Digest};
+use futures::executor::block_on;
 
 fn main() {
     let selections = &[
@@ -61,7 +62,7 @@ fn create_secret_key() -> std::io::Result<()> {
     Ok(())
 }
 
-fn create_database() -> std::io::Result<()> {
-    println!("initialising database");
-    Ok(())
+#[tokio::main]
+async fn create_database() -> std::io::Result<()> {
+   Ok(())
 }

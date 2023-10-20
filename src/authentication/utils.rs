@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 use chrono::{serde::ts_seconds, Duration};
 use serde::{Deserialize, Serialize};
 use chrono::prelude::*;
-use rocket::{request::{Outcome, Request, FromRequest}, http::Status};
+use rocket::{request::{Outcome, Request, FromRequest}, http::Status, FromForm};
 use jsonwebtoken::{encode, decode, Header, Validation, EncodingKey, DecodingKey};
 use sha2::{Sha256, Digest};
 use lazy_static::lazy_static;
