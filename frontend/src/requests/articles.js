@@ -23,3 +23,15 @@ export async function put_article_image(imageFile) {
         }
     });
 }
+
+export async function put_article(name,jsonString) {
+    INSTANCE.put(`/articles/post/${name}.json`, jsonString, {
+        headers: {
+            'Content-Type': "application/json"
+        }
+    });
+}
+
+export async function get_article(name) {
+    INSTANCE.get(`/articles/post/${name}.json`);
+}

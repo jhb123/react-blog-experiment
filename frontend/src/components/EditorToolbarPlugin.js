@@ -12,7 +12,7 @@ import { mergeRegister } from '@lexical/utils';
 import Box from '@mui/material/Box';
 import { ButtonGroup } from "@mui/material";
 
-import { BoldToggle, CodeToggle, ItalicToggle, UnderlineToggle, LinkToggle } from "./editor-toggles"
+import { BoldToggle, CodeToggle, ItalicToggle, UnderlineToggle, LinkToggle, DeserialiseTest } from "./editor-toggles"
 import { InsertImageTest } from './ImagePlugin';
 import { FontSizeEditorToolbarMenu, FontAlignmentEditorToolbarMenu } from './editor-menus';
 
@@ -58,6 +58,7 @@ function EditorToolbarPlugin() {
                 <CodeToggle active={isCode}/>
                 <InsertImageTest />
                 <LinkToggle />
+                <DeserialiseTest />
             </ButtonGroup>
         </Box>
     );

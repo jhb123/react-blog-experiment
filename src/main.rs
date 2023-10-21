@@ -5,14 +5,16 @@ use std::path::{PathBuf, Path};
 use rocket::fs::NamedFile;
 use rocket::response::content;
 use rocket_blog::authentication::routes::{admin_login, sensitive};
-use rocket_blog::articles::routes::{post_upload_article_image, put_upload_article_image, get_article_image};
+use rocket_blog::articles::routes::{
+    post_upload_article_image, put_upload_article_image,
+     get_article_image, get_article,put_article};
 
 #[launch]
 fn rocket() -> _ {
 
     rocket::build()
         .mount("/", routes![index,react_build, admin_login, sensitive])
-        .mount("/articles", routes![post_upload_article_image, put_upload_article_image, get_article_image])
+        .mount("/articles", routes![post_upload_article_image, put_upload_article_image, get_article_image,get_article, put_article])
 }
 
 #[get("/")]

@@ -1,6 +1,7 @@
 import {OnChangePlugin} from '@lexical/react/LexicalOnChangePlugin';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { useState, useEffect } from "react";
+import { put_article } from "../requests/articles";
 
 export function SavePlugin() {
 
@@ -15,6 +16,7 @@ export function SavePlugin() {
                 const editorState = editor.getEditorState();
                 const json = editorState.toJSON();
                 console.log(json)
+                put_article("test",json)
 
                 })
         }, 1000)

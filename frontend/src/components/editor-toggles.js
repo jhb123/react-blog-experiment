@@ -17,7 +17,33 @@ import FormatItalicIcon from '@mui/icons-material/FormatItalic';
 import FormatCodeIcon from '@mui/icons-material/Code';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import LinkIcon from '@mui/icons-material/Link';
+import ConstructionIcon from '@mui/icons-material/Construction';
+import {get_article} from "../requests/articles"
+import {INSTANCE} from "../requests/common"
 
+
+export function DeserialiseTest () {
+    const [editor] = useLexicalComposerContext();
+    const onClick = () => {
+        // editor.dispatchCommand(FORMAT_TEXT_COMMAND, "bold");
+        INSTANCE.get(`/articles/post/a_test.json`).then( (response) => {
+            console.log(response.data)
+            editor.update(() => {
+                const editorState = editor.parseEditorState(response.data)
+                editor.setEditorState(editorState);
+              })
+        })
+        .catch(function (error) {
+            console.log(error)
+        });
+
+    }
+    return (
+        <Button onClick={onClick} color="tool">
+            <ConstructionIcon/>
+        </Button>
+    )
+}
 
 export function CodeToggle ({active}) {
     const [editor] = useLexicalComposerContext();

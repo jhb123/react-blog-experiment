@@ -102,10 +102,12 @@ export class ImageNode extends DecoratorNode {
     return new ImageNode(node.__id, node.__url, node.__key);
   }
 
-  constructor(id, url, key) {
+  constructor(id, url, key, scale) {
     super(key);
     this.__id = id;
     this.__url = url;
+    this.__scale = scale;
+
   }
 
   updateURL(url) {
@@ -122,13 +124,15 @@ export class ImageNode extends DecoratorNode {
   }
 
   decorate() {
-    return <ResizableImage className="editor-image" src={this.__url} alt="Loch Lomond" />
+    return <ResizableImage className="editor-image" src={this.__url} alt="Loch Lomond" initial_scale={this.__scale} />
   }
 
   exportJSON()  {
     const jsonObject = {
       type: this.__type,
+      id: this.__id,
       url: this.__url,
+      scale: this.__scale,
       version: 1,
   };
 
@@ -136,24 +140,24 @@ export class ImageNode extends DecoratorNode {
     return jsonObject
   }
 
-  importJSON(serializedNode) {
-    const node = ImageNode(url=serializedNode.url);
-    return node;
+  static importJSON(serializedNode) {
+    console.log("importing json")
+    return $createImageNode(serializedNode.id, serializedNode.url, serializedNode.scale)
   }
 
 
 }
 
-export function $createImageNode(id, imgData) {
-  return new ImageNode(id, imgData);
+export function $createImageNode(id, imgData, scale) {
+  return new ImageNode(id, imgData, scale);
 }
 export function $isImageNode(node) {
   return node instanceof ImageNode;
 }
 
-function ResizableImage({isEditable = true, src, alt}) {
+function ResizableImage({isEditable = true, src, initial_scale = null, alt}) {
   
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState( initial_scale ??= 1 );
 
   const numWidths = 4
 
