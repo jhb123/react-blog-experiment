@@ -29,15 +29,16 @@ export function FontSizeEditorToolbarMenu() {
         editor.update(() => {
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
+
             switch(item){
-                case 'p': $setBlocksType(selection, () => $createParagraphNode(item));
-                case 'h1': $setBlocksType(selection, () => $createHeadingNode(item));
-                case 'h2': $setBlocksType(selection, () => $createHeadingNode(item));
-                case 'h3': $setBlocksType(selection, () => $createHeadingNode(item));
-                case 'h4': $setBlocksType(selection, () => $createHeadingNode(item));
-                case 'bullet' : $setBlocksType(selection, () => $createListNode(item));
-                case 'number' : $setBlocksType(selection, () => $createListNode(item));
-                // default: $setBlocksType(selection, () => $createParagraphNode(item));
+                case 'p': $setBlocksType(selection, () => $createParagraphNode(item)); break
+                case 'h1': $setBlocksType(selection, () => $createHeadingNode(item)); break
+                case 'h2': $setBlocksType(selection, () => $createHeadingNode(item)); break
+                case 'h3': $setBlocksType(selection, () => $createHeadingNode(item)); break
+                case 'h4': $setBlocksType(selection, () => $createHeadingNode(item)); break
+                case 'bullet' : $setBlocksType(selection, () => $createListNode(item)); break
+                case 'number' : $setBlocksType(selection, () => $createListNode(item)); break
+                default: console.log(`Unknown item ${item}`);  break
             }
           }
         });
