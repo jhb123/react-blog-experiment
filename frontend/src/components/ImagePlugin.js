@@ -1,5 +1,5 @@
 import "./styles.css"
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
@@ -10,23 +10,40 @@ import {
 } from 'lexical';
 import SerializedLexicalNode from "lexical"
 import Button from '@mui/material/Button';
-
+import { put_article_image } from "../requests/articles";
+import { BASE_URL } from "../requests/common";
+import placeHolder from "../images/test.png"
 
 export function InsertImageTest() {
 
-  const INSERT_IMAGE_COMMAND = createCommand();
+  const UPLOAD_AND_INSERT_IMAGE_COMMAND = createCommand("insert image");
 
   const [editor] = useLexicalComposerContext();
 
-  editor.registerCommand(
-    INSERT_IMAGE_COMMAND,
-    (payload) => {
-      const imageNode = $createImageNode("image", payload);
-      $insertNodes([imageNode]);
-      return false;
-    },
-    COMMAND_PRIORITY_LOW,
-  );
+  useEffect(() => {
+    editor.registerCommand(
+      UPLOAD_AND_INSERT_IMAGE_COMMAND,
+      (fileObj) => {
+
+        let imageNode = $createImageNode("image", null);
+        $insertNodes([imageNode]);
+
+        put_article_image(fileObj).then(function (response){
+          let url = `${BASE_URL}/articles/image/${fileObj.name}`
+          imageNode.updateURL(url)
+          editor.update(() => {})
+
+        }).catch(function (error) {
+          console.log(error)
+      });
+
+        return false;
+      },
+      COMMAND_PRIORITY_LOW,
+    );
+  }, [editor]);
+
+  
 
   const selectImage = () => {
     // return( <Button>New</Button>);
@@ -49,10 +66,7 @@ export function InsertImageTest() {
 
     const reader = new FileReader();
     reader.addEventListener("load", function () {
-      // convert image file to base64 string and save to localStorage
-      localStorage.setItem(fileObj.name, reader.result);
-      editor.dispatchCommand(INSERT_IMAGE_COMMAND, fileObj.name);
-
+      editor.dispatchCommand(UPLOAD_AND_INSERT_IMAGE_COMMAND, fileObj);
     }, false);
 
     reader.readAsDataURL(fileObj);
@@ -85,14 +99,17 @@ export class ImageNode extends DecoratorNode {
   }
 
   static clone(node) {
-    return new ImageNode(node.__id, node.__fname, node.__key);
+    return new ImageNode(node.__id, node.__url, node.__key);
   }
 
-  constructor(id, imgData, key) {
+  constructor(id, url, key) {
     super(key);
     this.__id = id;
-    this.__fname = imgData;
-    this.__imgData = localStorage.getItem(imgData);
+    this.__url = url;
+  }
+
+  updateURL(url) {
+    this.__url = url
   }
 
   createDOM() {
@@ -101,11 +118,11 @@ export class ImageNode extends DecoratorNode {
   }
 
   updateDOM() {
-    return false;
+    return true;
   }
 
   decorate() {
-    return <ResizableImage className="editor-image" src={this.__imgData} alt="Loch Lomond" />
+    return <ResizableImage className="editor-image" src={this.__url} alt="Loch Lomond" />
   }
 
   exportJSON()  {
@@ -134,6 +151,8 @@ function ResizableImage({isEditable = true, src, alt}) {
 
   const numWidths = 4
 
+  var imgSrc = (!src)? placeHolder : src
+
   const onClick = () => {
     if(!isEditable){
       return
@@ -154,7 +173,7 @@ function ResizableImage({isEditable = true, src, alt}) {
 
   return(
     <>
-      <img width={calculateWidth()} draggable="false" src={src} alt={alt} onClick={onClick}/>
+      <img width={calculateWidth()} draggable="false" src={imgSrc} alt={alt} onClick={onClick}/>
     </>
   )
   
