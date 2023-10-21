@@ -128,11 +128,17 @@ export class ImageNode extends DecoratorNode {
   exportJSON()  {
     const jsonObject = {
       type: this.__type,
+      url: this.__url,
       version: 1,
   };
 
     console.log('Trying to export json')
     return jsonObject
+  }
+
+  importJSON(serializedNode) {
+    const node = ImageNode(url=serializedNode.url);
+    return node;
   }
 
 
