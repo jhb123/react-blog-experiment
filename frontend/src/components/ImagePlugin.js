@@ -1,8 +1,6 @@
 import "./styles.css"
 import { useRef, useState } from 'react';
 import InsertPhotoIcon from '@mui/icons-material/InsertPhoto';
-
-
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import {
   $insertNodes,
@@ -10,10 +8,8 @@ import {
   DecoratorNode,
   COMMAND_PRIORITY_LOW,
 } from 'lexical';
-
-import Typography from '@mui/material/Typography';
+import SerializedLexicalNode from "lexical"
 import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
 
 
 export function InsertImageTest() {
@@ -82,9 +78,10 @@ export class ImageNode extends DecoratorNode {
   // essentially copied from the documentation
 
   __id;
+  static __nodeType = "image"
 
   static getType() {
-    return 'image';
+    return this.__nodeType;
   }
 
   static clone(node) {
@@ -110,6 +107,18 @@ export class ImageNode extends DecoratorNode {
   decorate() {
     return <ResizableImage className="editor-image" src={this.__imgData} alt="Loch Lomond" />
   }
+
+  exportJSON()  {
+    const jsonObject = {
+      type: this.__type,
+      version: 1,
+  };
+
+    console.log('Trying to export json')
+    return jsonObject
+  }
+
+
 }
 
 export function $createImageNode(id, imgData) {

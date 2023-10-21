@@ -3,7 +3,7 @@ import { useState, useContext } from "react";
 import Button from '@mui/material/Button';
 import axios from "axios";
 import { AdminContext } from "../pages/Layout";
-import {instance} from "../requests/admin"
+import {INSTANCE} from "../requests/common"
 import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -49,7 +49,7 @@ const AdminForm = ({open, setOpen}) => {
         setIsAdmin(true);
         setIsErr(false);
         console.log(response.data)
-        instance.defaults.headers.common['Authorization'] = `Bearer ${response.data}`;
+        INSTANCE.defaults.headers.common['Authorization'] = `Bearer ${response.data}`;
         //set("Authorization", "Bearer ${response.statusText}")
       })
       .catch(function (error) {

@@ -1,4 +1,6 @@
 import "./styles.css"
+
+
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
 import { ContentEditable } from '@lexical/react/LexicalContentEditable';
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin';
@@ -6,18 +8,18 @@ import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin';
 import { LinkPlugin } from '@lexical/react/LexicalLinkPlugin';
 import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HeadingNode } from '@lexical/rich-text';
 import { TreeView } from "@lexical/react/LexicalTreeView";
 import { LinkNode } from "@lexical/link"
 import { ListItemNode, ListNode } from "@lexical/list"
-
+import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 
 import Paper from '@mui/material/Paper';
 
 import EditorToolbarPlugin from "./EditorToolbarPlugin";
 import { ImageNode } from "./ImagePlugin";
+import { SavePlugin } from "./savePlugin";
 
 
 const theme = {
@@ -56,6 +58,8 @@ function Editor() {
         nodes: [HeadingNode, ImageNode, LinkNode, ListNode, ListItemNode]
     };
 
+
+
     return (
         <div className="editorWrapper">
             <LexicalComposer initialConfig={initialConfig}>
@@ -74,6 +78,7 @@ function Editor() {
                 <TreeViewPlugin />
                 <TabIndentationPlugin/>
                 <ListPlugin />
+                <SavePlugin />
             </LexicalComposer>
         </div>
     );
