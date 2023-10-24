@@ -25,12 +25,12 @@ export function InsertImageTest() {
       UPLOAD_AND_INSERT_IMAGE_COMMAND,
       (fileObj) => {
 
-        let imageNode = $createImageNode("image", null);
+        let imageNode = $createImageNode("image", null, null, null);
         $insertNodes([imageNode]);
 
         put_article_image(fileObj).then(function (response){
           let url = `${BASE_URL}/articles/image/${fileObj.name}`
-          imageNode.updateURL(url)
+          imageNode.setUrl(url)
           editor.update(() => {})
 
         }).catch(function (error) {
@@ -44,16 +44,10 @@ export function InsertImageTest() {
   }, [editor]);
 
   
-
-  const selectImage = () => {
-    // return( <Button>New</Button>);
-  }
   const inputFile = useRef(null)
 
   const onClick = () => {
-    // selectImage()
     inputFile.current.click();
-    // editor.dispatchCommand(INSERT_IMAGE_COMMAND,"test payload");
   }
 
   const handleFileChange = event => {
@@ -99,20 +93,23 @@ export class ImageNode extends DecoratorNode {
   }
 
   static clone(node) {
-    return new ImageNode(node.__id, node.__url, node.__key);
+    return new ImageNode(node.__id, node.__url, node.__key, node.__scale);
   }
 
   constructor(id, url, key, scale) {
     super(key);
     this.__id = id;
     this.__url = url;
-    this.__scale = scale;
+    this.__scale = scale ?? 1; // a number between 0 and 1, hopefully.
 
   }
 
-  updateURL(url) {
-    this.__url = url
-  }
+  setUrl = (url) => this.__url = url
+  getUrl = () => this.__url
+
+  setScale = (scale) => this.__scale = scale
+  getScale = () => this.__scale
+  
 
   createDOM() {
     // this puts the image in a span. This feels like a nicer way to edit the document
@@ -124,7 +121,7 @@ export class ImageNode extends DecoratorNode {
   }
 
   decorate() {
-    return <ResizableImage className="editor-image" src={this.__url} alt="Loch Lomond" initial_scale={this.__scale} />
+    return <ResizableImage className="editor-image" node={this} alt="Loch Lomond" />
   }
 
   exportJSON()  {
@@ -133,6 +130,7 @@ export class ImageNode extends DecoratorNode {
       id: this.__id,
       url: this.__url,
       scale: this.__scale,
+      key: this.__key,
       version: 1,
   };
 
@@ -141,45 +139,57 @@ export class ImageNode extends DecoratorNode {
   }
 
   static importJSON(serializedNode) {
-    console.log("importing json")
-    return $createImageNode(serializedNode.id, serializedNode.url, serializedNode.scale)
+    console.log(serializedNode)
+    return $createImageNode(serializedNode.id, serializedNode.url, null, serializedNode.scale)
   }
 
 
 }
 
-export function $createImageNode(id, imgData, scale) {
-  return new ImageNode(id, imgData, scale);
+export function updateImageNodeScale(imageNode, scale) {
+  imageNode.setScale(scale)
+  imageNode.updateDOM()
+}
+
+export function $createImageNode(id, imgData, key, scale) {
+  return new ImageNode(id, imgData, key, scale);
 }
 export function $isImageNode(node) {
   return node instanceof ImageNode;
 }
 
-function ResizableImage({isEditable = true, src, initial_scale = null, alt}) {
-  
-  const [scale, setScale] = useState( initial_scale ??= 1 );
+function ResizableImage({isEditable = true, node, alt}) {
 
-  const numWidths = 4
+  // this represents how many possible widths there are and its used
+  // to normalise calculations and keep track of a choice.
+  const maxWidth = 4
 
-  var imgSrc = (!src)? placeHolder : src
+  // default to the smallest width if there is no scale provided. However,
+  // image nodes have a default scale of 1 (i.e. as big as possible) so its 
+  // unlikely to need the default here. 
+  const [width, setWidth] = useState( node.getScale()*maxWidth ?? 1 );
+
+  var imgSrc = node.getUrl() ?? placeHolder
 
   const onClick = () => {
+    // I didn't think of a better way to do this. This function handles
+    // updating the UI and updating the underlying data.
     if(!isEditable){
       return
     }
 
-    var newScale = (scale+1)
-    if(newScale%(numWidths+1) ===0){
-      setScale(1);
+    var newWidth = (width+1)
+    if(newWidth%(maxWidth+1) ===0){
+      setWidth(1);
+      updateImageNodeScale(node,1/maxWidth)
     }
     else{
-      setScale(newScale);
+      setWidth(newWidth);
+      updateImageNodeScale(node,newWidth/maxWidth)
     }
   }
 
-  const calculateWidth = () => {
-    return 100*scale/numWidths+"%"
-  }
+  const calculateWidth = () => 100*width/maxWidth+"%"
 
   return(
     <>
