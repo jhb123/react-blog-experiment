@@ -10,10 +10,8 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin';
 import { TabIndentationPlugin } from '@lexical/react/LexicalTabIndentationPlugin';
 import LexicalErrorBoundary from '@lexical/react/LexicalErrorBoundary';
 import { HeadingNode } from '@lexical/rich-text';
-import { TreeView } from "@lexical/react/LexicalTreeView";
 import { LinkNode } from "@lexical/link"
 import { ListItemNode, ListNode } from "@lexical/list"
-import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 
 import Paper from '@mui/material/Paper';
 
@@ -75,28 +73,12 @@ function Editor() {
                 />
                 <HistoryPlugin />
                 <LinkPlugin />
-                <TreeViewPlugin />
                 <TabIndentationPlugin/>
                 <ListPlugin />
                 <SavePlugin />
             </LexicalComposer>
         </div>
     );
-}
-
-
-function TreeViewPlugin() {
-  const [editor] = useLexicalComposerContext();
-  return (
-    <TreeView
-      viewClassName="tree-view-output"
-      timeTravelPanelClassName="debug-timetravel-panel"
-      timeTravelButtonClassName="debug-timetravel-button"
-      timeTravelPanelSliderClassName="debug-timetravel-panel-slider"
-      timeTravelPanelButtonClassName="debug-timetravel-panel-button"
-      editor={editor}
-    />
-  );
 }
 
 

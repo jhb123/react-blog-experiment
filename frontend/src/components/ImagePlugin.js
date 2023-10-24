@@ -7,8 +7,8 @@ import {
   createCommand,
   DecoratorNode,
   COMMAND_PRIORITY_LOW,
+  CLICK_COMMAND,
 } from 'lexical';
-import SerializedLexicalNode from "lexical"
 import Button from '@mui/material/Button';
 import { put_article_image } from "../requests/articles";
 import { BASE_URL } from "../requests/common";
@@ -41,7 +41,7 @@ export function InsertImageTest() {
       },
       COMMAND_PRIORITY_LOW,
     );
-  }, [editor]);
+  }, [editor,UPLOAD_AND_INSERT_IMAGE_COMMAND]);
 
   
   const inputFile = useRef(null)
@@ -133,13 +133,10 @@ export class ImageNode extends DecoratorNode {
       key: this.__key,
       version: 1,
   };
-
-    console.log('Trying to export json')
     return jsonObject
   }
 
   static importJSON(serializedNode) {
-    console.log(serializedNode)
     return $createImageNode(serializedNode.id, serializedNode.url, null, serializedNode.scale)
   }
 
@@ -159,6 +156,8 @@ export function $isImageNode(node) {
 }
 
 function ResizableImage({isEditable = true, node, alt}) {
+
+  const [editor] = useLexicalComposerContext();
 
   // this represents how many possible widths there are and its used
   // to normalise calculations and keep track of a choice.
@@ -187,6 +186,7 @@ function ResizableImage({isEditable = true, node, alt}) {
       setWidth(newWidth);
       updateImageNodeScale(node,newWidth/maxWidth)
     }
+    editor.dispatchCommand(CLICK_COMMAND)
   }
 
   const calculateWidth = () => 100*width/maxWidth+"%"

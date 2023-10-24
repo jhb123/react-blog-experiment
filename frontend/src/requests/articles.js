@@ -17,7 +17,7 @@ export const upload_article_image = (image) =>
     })
 
 export async function put_article_image(imageFile) {
-    INSTANCE.put(`/articles/image/${imageFile.name}`, imageFile, {
+    return INSTANCE.put(`/articles/image/${imageFile.name}`, imageFile, {
         headers: {
             'Content-Type': imageFile.type
         }
@@ -25,7 +25,7 @@ export async function put_article_image(imageFile) {
 }
 
 export async function put_article(name,jsonString) {
-    INSTANCE.put(`/articles/post/${name}.json`, jsonString, {
+    return INSTANCE.put(`/articles/post/${name}.json`, jsonString, {
         headers: {
             'Content-Type': "application/json"
         }
@@ -33,5 +33,5 @@ export async function put_article(name,jsonString) {
 }
 
 export async function get_article(name) {
-    INSTANCE.get(`/articles/post/${name}.json`);
+    return INSTANCE.get(`/articles/post/${name}.json`);
 }
