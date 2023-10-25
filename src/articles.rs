@@ -1,13 +1,39 @@
 pub mod routes {
+    
+    use rocket::fairing::AdHoc;
     use rocket::fs::{TempFile, NamedFile};
     use rocket::http::Status;
-    use rocket::{get, post, put};
+    use rocket::time::Date;
+    use rocket::{get, post, put, routes};
+    use rocket_db_pools::{sqlx, Database, Connection};
+    use rocket::response::status::Created;
+    use rocket::serde::{Serialize, Deserialize, json::Json};
     use uuid::Uuid;
-    use std::fs::{self, FileType, File};
-    use std::io;
+    //use sqlx::mysql::MySqlPool;
+    use std::fs::{self};
+    use std::io;    
     use crate::authentication::utils::Token;
 
+    type Result<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
+
     const ARTICLE_IMAGE_DIR: &str = "./articles/images";
+    const ARTICLE_DIR: &str = "./articles";
+    
+    #[derive(Database)]
+    #[database("sqlx")]
+    struct ArticlesDb(sqlx::mysql::MySqlPool);
+
+    #[derive(Debug, Clone, Deserialize, Serialize)]
+    #[serde(crate = "rocket::serde")]
+    struct Article {
+        #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
+        id: Option<i64>,
+        creation_date: Option<String>,
+        published_date: Option<String>,
+        is_published: bool,
+        title: Option<String>,
+        blurb: Option<String>,
+    }
 
     // one of these methods may be better than the other
     #[post("/upload", format = "image/*", data = "<file>")]
@@ -38,11 +64,35 @@ pub mod routes {
     }
 
 
+    #[post("/create")]
+    async fn create_article(mut db: Connection<ArticlesDb>) -> Result<()>{
+        // There is no support for `RETURNING`.
+        sqlx::query("INSERT INTO articles (is_published) VALUES (true)")
+            .execute(&mut *db)
+            .await?;
+    
+        Ok(())
+    }
+
     async fn save_image_file( file_name: &String, mut file: TempFile<'_>) -> io::Result<()> {
         let path = format!("{ARTICLE_IMAGE_DIR}/{file_name}");
         fs::create_dir_all(ARTICLE_IMAGE_DIR)?;
         file.persist_to(&path).await   
     }
 
+    async fn save_article( file_name: &String, mut file: TempFile<'_>) -> io::Result<()> {
+        let path = format!("{ARTICLE_DIR}/{file_name}");
+        fs::create_dir_all(ARTICLE_DIR)?;
+        file.persist_to(&path).await   
+    }
+
+    //"db/sqlx/db.mysql"
+    pub fn stage() -> AdHoc {
+        AdHoc::on_ignite("SQLx Stage", |rocket| async {
+            rocket.attach(ArticlesDb::init())
+                //.attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
+                .mount("/sqlx", routes![create_article])
+        })
+    }
 }
 
