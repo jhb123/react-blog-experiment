@@ -1,0 +1,2 @@
+[default.databases.sqlx]
+url = "mysql://root:root@localhost/blog-db"
