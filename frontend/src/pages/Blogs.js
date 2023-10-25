@@ -58,7 +58,16 @@ On the bonnie, bonnie banks o' Loch Lomond.\
   const BlogCard = ({image, title, blurb}) => {
 
     return(
-      <Card sx={{ maxWidth: 345, height:"100%", display:"flex", flexDirection: "column", justifyContent: "space-around"}}>
+      <Card sx={{ 
+          maxWidth: 345, 
+          height:"100%", 
+          display:"flex", 
+          flexDirection: "column", 
+          justifyContent: "space-around",
+          ':hover': {
+            boxShadow: 10, // theme.shadows[20]
+          },
+          }}>
         <CardMedia
         sx={{ height: 140 }}
         image={image}
