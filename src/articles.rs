@@ -1,10 +1,11 @@
 pub mod routes {
     
     use rocket::fairing::AdHoc;
+    use rocket::form::Form;
     use rocket::fs::{TempFile, NamedFile};
     use rocket::http::Status;
     use rocket::time::Date;
-    use rocket::{get, post, put, routes};
+    use rocket::{get, post, put, routes, FromForm};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::response::status::Created;
     use rocket::serde::{Serialize, Deserialize, json::Json};
@@ -35,34 +36,18 @@ pub mod routes {
         blurb: Option<String>,
     }
 
-    // one of these methods may be better than the other
-    #[post("/upload", format = "image/*", data = "<file>")]
-    pub async fn post_upload_article_image(_token: Token<'_>, file: TempFile<'_>) -> (Status, String) {
-               
-        let id = Uuid::new_v4();
-        let ext = file.content_type().unwrap().extension().unwrap();
-        let name = format!("{id}.{ext}");
-
-        match save_image_file(&name, file).await {
-            Ok(()) => (Status::Accepted, id.to_string()),
-            Err(error) => (Status::InternalServerError, format!("failed to save {name} with error: {error}"))
+    #[derive(FromForm)]
+    pub struct Upload<'r> {
+        files: Vec<TempFile<'r>>,
+    }
+    
+    #[post("/<guid>", data = "<upload>")]
+    pub async fn upload_form(_token: Token<'_>, guid: String, mut upload: Form<Upload<'_>>) -> (Status, String){ 
+        for file in upload.files.iter_mut(){
+            save_article_item(&guid, file).await;
         }
+        (Status::Accepted,"uploaded".to_string())
     }
-
-    #[put("/image/<name>", format = "image/*", data = "<file>")]
-    pub async fn put_upload_article_image(_token: Token<'_>, name: String,file: TempFile<'_>) -> (Status, String) {
-        match save_image_file(&name.to_string(), file).await {
-            Ok(()) => (Status::Accepted, "uploaded file".to_string()),
-            Err(error) => (Status::InternalServerError, format!("failed to put image {name} with {error}"))
-        }
-    }
-
-    #[get("/image/<name>")]
-    pub async fn get_article_image(name: String) -> Option<NamedFile>{
-        let path: String = format!("{ARTICLE_IMAGE_DIR}/{name}");
-        NamedFile::open(path).await.ok()
-    }
-
 
     #[post("/create")]
     async fn create_article(mut db: Connection<ArticlesDb>) -> Result<()>{
@@ -74,16 +59,14 @@ pub mod routes {
         Ok(())
     }
 
-    async fn save_image_file( file_name: &String, mut file: TempFile<'_>) -> io::Result<()> {
-        let path = format!("{ARTICLE_IMAGE_DIR}/{file_name}");
-        fs::create_dir_all(ARTICLE_IMAGE_DIR)?;
-        file.persist_to(&path).await   
-    }
-
-    async fn save_article( file_name: &String, mut file: TempFile<'_>) -> io::Result<()> {
-        let path = format!("{ARTICLE_DIR}/{file_name}");
-        fs::create_dir_all(ARTICLE_DIR)?;
-        file.persist_to(&path).await   
+    async fn save_article_item( guid: &String, file: &mut TempFile<'_>) -> io::Result<()> {
+        let name = file.name().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no name"))?;
+        let content_type = file.content_type().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no content type"))?;
+        let ext = content_type.extension().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no extension"))?;  
+        let full_name = [name, &ext.to_string()].join(".");
+        let dir = format!("{ARTICLE_DIR}/{guid}");
+        fs::create_dir_all(&dir)?;
+        file.persist_to( format!("{dir}/{full_name}")).await    
     }
 
     //"db/sqlx/db.mysql"
