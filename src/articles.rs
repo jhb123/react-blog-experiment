@@ -116,9 +116,9 @@ pub mod routes {
                         x if x.starts_with("https://") => x.to_string(),
                         x if x.starts_with("http://") => x.to_string(),
                         x if x.starts_with("./") => {
-                            format!("/articles/{guid}/").to_owned() + &x[2..]
+                            format!("/articles/{guid}/image/").to_owned() + &x[2..]
                         },
-                        x => format!("/articles/{guid}/").to_owned() + x
+                        x => format!("/articles/{guid}/image/").to_owned() + x
                     };
                     src.replace_range(..,&new_src);
                 }
