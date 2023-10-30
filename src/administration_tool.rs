@@ -1,9 +1,8 @@
-use std::{fs::File, io::BufReader};
+use std::fs::File;
 use std::io::Write;
 use dialoguer::{theme::ColorfulTheme, Select, Password};
 use rand::{Rng, distributions::Alphanumeric};
 use sha2::{Sha256, Digest};
-use futures::executor::block_on;
 
 fn main() {
     let selections = &[
