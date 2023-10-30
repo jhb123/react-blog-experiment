@@ -6,7 +6,7 @@ use rocket::{Rocket, Ignite};
 use rocket::fs::NamedFile;
 use rocket::response::content;
 use rocket_blog::authentication::routes::{admin_login, sensitive};
-use rocket_blog::articles::routes::{upload_form,stage};
+use rocket_blog::articles::routes::{upload_form,get_article,get_image,stage};
 use sqlx::MySqlPool;
 
 #[launch]
@@ -14,7 +14,7 @@ async fn rocket() ->  _ {
 
     rocket::build()
         .mount("/", routes![index,react_build, admin_login, sensitive])
-        .mount("/articles", routes![upload_form])
+        .mount("/articles", routes![upload_form,get_article, get_image])
         .attach(stage())
 
 }
@@ -32,7 +32,7 @@ fn index() -> content::RawHtml<String> {
 
 }
 
-#[get("/<path..>")]
+#[get("/<path..>", rank = 2)]
 async fn react_build(path: PathBuf) -> Option<NamedFile> {
     let base_path = Path::new("./frontend/build");
     let full_path = base_path.join(path);

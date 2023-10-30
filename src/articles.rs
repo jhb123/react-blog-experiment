@@ -2,9 +2,10 @@ pub mod routes {
     
     use rocket::fairing::AdHoc;
     use rocket::form::Form;
-    use rocket::fs::TempFile;
+    use rocket::fs::{TempFile, NamedFile};
     use rocket::http::Status;
-    use rocket::{post, put, routes, FromForm};
+    use rocket::response::status::NotFound;
+    use rocket::{post, put, routes, FromForm, get};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
@@ -57,8 +58,23 @@ pub mod routes {
                 return (Status::InternalServerError,error.to_string())
             };
         }
-
         (Status::Accepted,"uploaded".to_string())
+    }
+
+
+    #[get("/<article_id>")]
+    pub fn get_article(_token: Token<'_>, article_id: &str) -> (Status, String) { 
+        let path = format!("{ARTICLE_DIR}/{article_id}/generated.html");
+        match fs::read_to_string(path) {
+            Ok(html) => (Status::Accepted,html),
+            Err(_) => (Status::NotFound, "Article HTML is missing".to_string())
+        }
+    }
+
+    #[get("/<article_id>/image/<name>")]
+    pub async fn get_image(_token: Token<'_>, article_id: &str, name: &str) -> Result<NamedFile, NotFound<String>> { 
+        let path = format!("{ARTICLE_DIR}/{article_id}/{name}");
+        NamedFile::open(&path).await.map_err(|e| NotFound(e.to_string()))
     }
 
     #[post("/create")]
@@ -67,7 +83,6 @@ pub mod routes {
         sqlx::query("INSERT INTO articles (is_published) VALUES (true)")
             .execute(&mut *db)
             .await?;
-    
         Ok(())
     }
 
