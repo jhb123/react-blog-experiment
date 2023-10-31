@@ -1,15 +1,16 @@
 pub mod routes {
     
-    use rocket::fairing::AdHoc;
+    use rocket::fairing::{AdHoc, self};
     use rocket::form::Form;
     use rocket::fs::{TempFile, NamedFile};
     use rocket::http::Status;
     use rocket::response::status::NotFound;
-    use rocket::{post, put, routes, FromForm, get};
+    use rocket::{post, put, routes, FromForm, get, Rocket, Build, error};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
     use kuchiki::traits::*;
+    use ::sqlx::migrate;
 
     //use sqlx::mysql::MySqlPool;
     use std::fs::{self,File};
@@ -24,15 +25,18 @@ pub mod routes {
     #[database("sqlx")]
     struct ArticlesDb(sqlx::mysql::MySqlPool);
 
+    
     #[derive(Debug, Clone, Deserialize, Serialize)]
     #[serde(crate = "rocket::serde")]
     struct Article {
         #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
-        id: Option<i64>,
+        article_id: Option<i64>,
         creation_date: Option<String>,
         published_date: Option<String>,
         is_published: bool,
+        visits: u64,
         title: Option<String>,
+        title_image: Option<String>,
         blurb: Option<String>,
     }
 
@@ -152,12 +156,24 @@ pub mod routes {
         Ok(())   
     }
 
+    async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
+        match ArticlesDb::fetch(&rocket) {
+            Some(db) => match migrate!("db/migrations").run(&**db).await {
+                Ok(_) => Ok(rocket),
+                Err(e) => {
+                    error!("Failed to initialize SQLx database: {}", e);
+                    Err(rocket)
+                }
+            }
+            None => Err(rocket),
+        }
+    }
 
     //"db/sqlx/db.mysql"
     pub fn stage() -> AdHoc {
         AdHoc::on_ignite("SQLx Stage", |rocket| async {
             rocket.attach(ArticlesDb::init())
-                //.attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
+                .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
                 .mount("/sqlx", routes![create_article])
         })
     }

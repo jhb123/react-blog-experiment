@@ -25,9 +25,9 @@ rocket = "=0.5.0-rc.3"
 features = ["json"]
 
 [dependencies.sqlx]
-version = "0.7.0"
+version = "0.6"
 default-features = false
-features = ["macros", "mysql", "migrate"]
+features = ["macros", "migrate"]
 
 [dependencies.rocket_db_pools]
 version = "=0.1.0-rc.3"
