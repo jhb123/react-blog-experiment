@@ -9,7 +9,7 @@ pub mod routes {
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
-    use kuchiki::traits::*;
+    use kuchiki::{traits::*, NodeRef};
     use ::sqlx::migrate;
 
     //use sqlx::mysql::MySqlPool;
@@ -67,7 +67,7 @@ pub mod routes {
 
 
     #[get("/<article_id>")]
-    fn get_article(_token: Token<'_>, article_id: &str) -> (Status, String) { 
+    fn get_article(article_id: &str) -> (Status, String) { 
         let path = format!("{ARTICLE_DIR}/{article_id}/generated.html");
         match fs::read_to_string(path) {
             Ok(html) => (Status::Accepted,html),
@@ -76,7 +76,7 @@ pub mod routes {
     }
 
     #[get("/<article_id>/image/<name>")]
-    async fn get_image(_token: Token<'_>, article_id: &str, name: &str) -> Result<NamedFile, NotFound<String>> { 
+    async fn get_image(article_id: &str, name: &str) -> Result<NamedFile, NotFound<String>> { 
         let path = format!("{ARTICLE_DIR}/{article_id}/{name}");
         NamedFile::open(&path).await.map_err(|e| NotFound(e.to_string()))
     }
@@ -122,29 +122,8 @@ pub mod routes {
         // Parse the html string to tree
         let document = kuchiki::parse_html().one(html);
 
-        // Extract the <img /> nodes and replace the src with valid ones. Its expected that the
-        // uploaded markdown will reference images in its local directory. These are given
-        // the prepended the path this server uses to look for files.
-        let img_nodes = document.select("img").unwrap();
-        for node in img_nodes {
-            let mut attrs =  node.attributes.borrow_mut();
-            match attrs.get_mut("src") {
-                Some(src) => {
-                    let trimmed = src.trim();
-                    let new_src = match trimmed {
-                        x if x.starts_with("https://") => x.to_string(),
-                        x if x.starts_with("http://") => x.to_string(),
-                        x if x.starts_with("./") => {
-                            format!("/articles/{guid}/image/").to_owned() + &x[2..]
-                        },
-                        x => format!("/articles/{guid}/image/").to_owned() + x
-                    };
-                    src.replace_range(..,&new_src);
-                }
-                None => {}
-            }        
-        }
-
+        modify_dom_img_src(&document, &guid);
+        
         let mut result = Vec::new();
         document.serialize(&mut result).expect("Failed to serialize document");
         let modified_html = String::from_utf8(result).expect("Invalid UTF-8 sequence");
@@ -154,6 +133,31 @@ pub mod routes {
         fs::write(path, modified_html)?;
  
         Ok(())   
+    }
+
+    fn modify_dom_img_src(document: &NodeRef, guid: &String){
+        // this function is for parsing the <img src="..."> in a html document and replacing 
+        // the src with valid urls
+        if let Ok(img_nodes) = document.select("img"){
+            for node in img_nodes {
+                let mut attrs =  node.attributes.borrow_mut();
+                match attrs.get_mut("src") {
+                    Some(src) => {
+                        let trimmed = src.trim();
+                        let new_src = match trimmed {
+                            x if x.starts_with("https://") => x.to_string(),
+                            x if x.starts_with("http://") => x.to_string(),
+                            x if x.starts_with("./") => {
+                                format!("/articles/{guid}/image/").to_owned() + &x[2..]
+                            },
+                            x => format!("/articles/{guid}/image/").to_owned() + x
+                        };
+                        src.replace_range(..,&new_src);
+                    }
+                    None => {}
+                }        
+            }
+        }
     }
 
     async fn run_migrations(rocket: Rocket<Build>) -> fairing::Result {
