@@ -5,7 +5,7 @@ pub mod routes {
     use rocket::fs::{TempFile, NamedFile};
     use rocket::http::Status;
     use rocket::response::status::NotFound;
-    use rocket::{post, put, routes, FromForm, get, Rocket, Build, error};
+    use rocket::{put, routes, FromForm, get, Rocket, Build, error};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
@@ -14,7 +14,7 @@ pub mod routes {
 
     //use sqlx::mysql::MySqlPool;
     use std::fs::{self,File};
-    use std::io;    
+    use std::io;
     use crate::authentication::utils::Token;
 
     type Result<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
@@ -30,7 +30,7 @@ pub mod routes {
     #[serde(crate = "rocket::serde")]
     struct Article {
         #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
-        article_id: Option<i64>,
+        article_id: Option<u64>,
         creation_date: Option<String>,
         published_date: Option<String>,
         is_published: bool,
@@ -42,13 +42,33 @@ pub mod routes {
 
     #[derive(FromForm)]
     struct Upload<'r> {
-        id: String,
+        id: Option<u64>,
+        title: Option<String>,
+        title_image: Option<String>,
+        blurb: Option<String>,
         files: Vec<TempFile<'r>>,
     }
     
     #[put("/upload", data = "<upload>")]
-    async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>) -> (Status, String){ 
-        let article_id = upload.id.to_owned();
+    async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>, db: Connection<ArticlesDb>) -> (Status, String){ 
+
+        
+        let article_id = match upload.id {
+            Some(x) => {
+                // update database
+                match update_article(&upload, db).await {
+                    Ok(_) => x.to_string(),
+                    Err(error) =>  return (Status::InternalServerError,error.0.to_string())
+                }
+                
+            },
+            None => {
+                match create_article(&upload, db).await {
+                    Ok(primary_key) => primary_key.to_string(),
+                    Err(error) => return (Status::InternalServerError,error.0.to_string()),
+                }
+            },
+        };
 
         // Save each file that is included with the form. If its markdown, generate a html
         // file as well
@@ -81,14 +101,58 @@ pub mod routes {
         NamedFile::open(&path).await.map_err(|e| NotFound(e.to_string()))
     }
 
-    #[post("/create")]
-    async fn create_article(mut db: Connection<ArticlesDb>) -> Result<()>{
-        // There is no support for `RETURNING`.
-        sqlx::query("INSERT INTO articles (is_published) VALUES (true)")
+    async fn update_article(upload: &Form<Upload<'_>>, mut db: Connection<ArticlesDb>) -> Result<()>{
+        // let null_str = "Null".to_string();
+        let title = upload.title.as_ref();
+        let title_image = upload.title_image.as_ref();
+        let blurb = upload.blurb.as_ref();
+        let article_id = upload.id.unwrap();
+
+        // let mut query_builder: QueryBuilder<MySql> = QueryBuilder::new(
+        //     "UPDATE articles");
+        let mut query = "UPDATE articles SET".to_string();
+        let mut parts: Vec<String> = Vec::new();
+        
+        if let Some(title) = title {
+            parts.push( format!(" title = '{}'", title));
+        }        
+        if let Some(title_image) = title_image {
+            parts.push( format!(" title_image = '{}'", title_image));
+        }
+        if let Some(blurb) = blurb {
+            parts.push( format!(" blurb = '{}'", blurb));
+        }
+        query.push_str(&parts.join(" ,"));
+        query.push_str(&format!(" WHERE article_id = {}", article_id.to_string() ));
+
+        sqlx::query(&query)
             .execute(&mut *db)
             .await?;
+
         Ok(())
     }
+
+    async fn create_article(upload: &Form<Upload<'_>>, mut db: Connection<ArticlesDb>) -> Result<u64>{
+
+        let null_str = "Null".to_string();
+        let title = upload.title.as_ref().unwrap_or(&null_str);
+        let title_image = upload.title_image.as_ref().unwrap_or(&null_str);
+        let blurb = upload.blurb.as_ref().unwrap_or(&null_str);
+
+        // let mut query_builder: QueryBuilder<MySql> = QueryBuilder::new(
+        //     "INSERT INTO articles (is_published, title, visits, title, title_image, blurb)");
+        let query = format!(
+            "INSERT INTO articles 
+            (is_published, visits, title, title_image, blurb) 
+            VALUES (false, 0, '{0}', '{1}', '{2}')",title, title_image, blurb);
+
+        let query_result = sqlx::query(&query )
+           .execute(&mut *db)
+           .await?;
+           Ok(query_result.last_insert_id())
+     }
+
+
 
     async fn save_article_item( guid: &String, file: &mut TempFile<'_>) -> io::Result<()> {
         let name = file.name().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no name"))?;
@@ -183,7 +247,6 @@ pub mod routes {
         AdHoc::on_ignite("SQLx Stage", |rocket| async {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-                .mount("/sqlx", routes![create_article])
                 .mount("/articles", routes![upload_form, get_article, get_image])
         })
     }
