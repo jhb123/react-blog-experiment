@@ -41,13 +41,13 @@ pub mod routes {
     }
 
     #[derive(FromForm)]
-    pub struct Upload<'r> {
+    struct Upload<'r> {
         id: String,
         files: Vec<TempFile<'r>>,
     }
     
     #[put("/upload", data = "<upload>")]
-    pub async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>) -> (Status, String){ 
+    async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>) -> (Status, String){ 
         let article_id = upload.id.to_owned();
 
         // Save each file that is included with the form. If its markdown, generate a html
@@ -67,7 +67,7 @@ pub mod routes {
 
 
     #[get("/<article_id>")]
-    pub fn get_article(_token: Token<'_>, article_id: &str) -> (Status, String) { 
+    fn get_article(_token: Token<'_>, article_id: &str) -> (Status, String) { 
         let path = format!("{ARTICLE_DIR}/{article_id}/generated.html");
         match fs::read_to_string(path) {
             Ok(html) => (Status::Accepted,html),
@@ -76,7 +76,7 @@ pub mod routes {
     }
 
     #[get("/<article_id>/image/<name>")]
-    pub async fn get_image(_token: Token<'_>, article_id: &str, name: &str) -> Result<NamedFile, NotFound<String>> { 
+    async fn get_image(_token: Token<'_>, article_id: &str, name: &str) -> Result<NamedFile, NotFound<String>> { 
         let path = format!("{ARTICLE_DIR}/{article_id}/{name}");
         NamedFile::open(&path).await.map_err(|e| NotFound(e.to_string()))
     }
@@ -175,6 +175,7 @@ pub mod routes {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
                 .mount("/sqlx", routes![create_article])
+                .mount("/articles", routes![upload_form,get_article, get_image])
         })
     }
 

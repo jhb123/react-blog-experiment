@@ -6,7 +6,7 @@ use rocket::{Rocket, Ignite};
 use rocket::fs::NamedFile;
 use rocket::response::content;
 use rocket_blog::authentication::routes::{admin_login, sensitive};
-use rocket_blog::articles::routes::{upload_form,get_article,get_image,stage};
+use rocket_blog::articles::routes::stage;
 use sqlx::MySqlPool;
 
 #[launch]
@@ -14,7 +14,6 @@ async fn rocket() ->  _ {
 
     rocket::build()
         .mount("/", routes![index,react_build, admin_login, sensitive])
-        .mount("/articles", routes![upload_form,get_article, get_image])
         .attach(stage())
 
 }
