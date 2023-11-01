@@ -104,12 +104,17 @@ pub mod routes {
         Ok(()) 
     }
 
-    fn generate_article_html( guid: &String, file: &mut TempFile<'_>) -> io::Result<()> {
+    fn generate_article_html( guid: &String, file: &mut TempFile<'_>) -> Result<(), Box<dyn std::error::Error>> {
         
         // Read the markdown to a string
-        let markdown = fs::read_to_string(file.path().unwrap()).unwrap();
+        let markdown_path = file.path().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Markdown file not found"))?;
+        let markdown = fs::read_to_string(markdown_path)?;
         
-        // Convert the markdown string to HTML string
+        // Convert the markdown string to HTML string. The dangerous part here
+        // is the markdown can have html in it, so I could put a malicous script
+        // in my posts. The reason for dangerously parsing the markdown is so that
+        // I can specify use <img> tags in the markdown. I guess I could add
+        // a thing which removes <script> tags.
         let html = to_html_with_options(&markdown,
             &Options {
             compile: CompileOptions {
@@ -117,20 +122,20 @@ pub mod routes {
               ..CompileOptions::default()
             },
             ..Options::default()
-        }).unwrap(); //this is safe according to the documentation 
+        }).unwrap(); //this unwrap is safe according to the documentation 
 
         // Parse the html string to tree
         let document = kuchiki::parse_html().one(html);
 
         modify_dom_img_src(&document, &guid);
         
+        // serialise the modified DOM to a html file
         let mut result = Vec::new();
-        document.serialize(&mut result).expect("Failed to serialize document");
-        let modified_html = String::from_utf8(result).expect("Invalid UTF-8 sequence");
-
-        let path = format!("{ARTICLE_DIR}/{guid}/generated.html");
-        _ = File::create(&path)?;
-        fs::write(path, modified_html)?;
+        document.serialize(&mut result)?;
+        let modified_html = String::from_utf8(result)?;
+        let html_path = format!("{ARTICLE_DIR}/{guid}/generated.html");
+        _ = File::create(&html_path)?;
+        fs::write(html_path, modified_html)?;
  
         Ok(())   
     }
@@ -179,7 +184,7 @@ pub mod routes {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
                 .mount("/sqlx", routes![create_article])
-                .mount("/articles", routes![upload_form,get_article, get_image])
+                .mount("/articles", routes![upload_form, get_article, get_image])
         })
     }
 
