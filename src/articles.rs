@@ -5,6 +5,7 @@ pub mod routes {
     use rocket::fs::{TempFile, NamedFile};
     use rocket::http::Status;
     use rocket::response::status::NotFound;
+    use rocket::serde::json::Json;
     use rocket::{put, routes, FromForm, get, Rocket, Build, error};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
@@ -12,7 +13,7 @@ pub mod routes {
     use kuchiki::{traits::*, NodeRef};
     use ::sqlx::migrate;
     use sqlx::{query, QueryBuilder};
-
+    use sqlx::types::chrono::DateTime;
     //use sqlx::mysql::MySqlPool;
     use std::fs::{self,File};
     use std::io;
@@ -32,23 +33,29 @@ pub mod routes {
     struct ArticlesDb(sqlx::mysql::MySqlPool);
 
     
-    #[derive(Debug, Clone, Deserialize, Serialize)]
+    #[derive(Debug, Clone, Deserialize, Serialize, sqlx::FromRow)]
     #[serde(crate = "rocket::serde")]
     struct ArticleMetadata {
-        #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
-        article_id: Option<u64>,
-        creation_date: Option<String>,
-        published_date: Option<String>,
-        is_published: bool,
-        visits: u64,
+        article_id: i64,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        creation_date: Option<DateTime<chrono::Utc>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        published_date: Option<DateTime<chrono::Utc>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        is_published: Option<bool>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        visits: Option<i64>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         title: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         title_image: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
         blurb: Option<String>,
     }
 
     #[derive(FromForm)]
     struct Upload<'r> {
-        article_id: Option<u64>,
+        article_id: Option<i64>,
         title: Option<String>,
         title_image: Option<String>,
         blurb: Option<String>,
@@ -92,6 +99,11 @@ pub mod routes {
         (Status::Accepted,"uploaded".to_string())
     }
 
+    #[get("/list")]
+    async fn get_article_list(mut db: Connection<ArticlesDb>) -> Result<Json<Vec<ArticleMetadata>>> { 
+        let res  = sqlx::query_as::<_, ArticleMetadata>("SELECT * FROM articles").fetch_all(&mut *db).await?;
+        Ok(Json(res))
+    }
 
     #[get("/<article_id>")]
     fn get_article(article_id: &str) -> (Status, String) { 
@@ -264,7 +276,7 @@ pub mod routes {
         AdHoc::on_ignite("SQLx Stage", |rocket| async {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-                .mount("/articles", routes![upload_form, get_article, get_image])
+                .mount("/articles", routes![upload_form, get_article, get_image, get_article_list])
         })
     }
 
