@@ -34,7 +34,7 @@ pub mod routes {
     
     #[derive(Debug, Clone, Deserialize, Serialize)]
     #[serde(crate = "rocket::serde")]
-    struct Article {
+    struct ArticleMetadata {
         #[serde(skip_deserializing, skip_serializing_if = "Option::is_none")]
         article_id: Option<u64>,
         creation_date: Option<String>,
@@ -48,7 +48,7 @@ pub mod routes {
 
     #[derive(FromForm)]
     struct Upload<'r> {
-        id: Option<u64>,
+        article_id: Option<u64>,
         title: Option<String>,
         title_image: Option<String>,
         blurb: Option<String>,
@@ -59,7 +59,7 @@ pub mod routes {
     async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>, db: Connection<ArticlesDb>) -> (Status, String){ 
 
         
-        let article_id = match upload.id {
+        let article_id = match upload.article_id {
             Some(x) => {
                 // update database
                 match update_article(&upload, db).await {
@@ -113,7 +113,7 @@ pub mod routes {
         let title = upload.title.as_ref();
         let title_image = upload.title_image.as_ref();
         let blurb = upload.blurb.as_ref();
-        let article_id = upload.id.unwrap();
+        let article_id = upload.article_id.unwrap();
 
         if (title.is_none() && title_image.is_none() && blurb.is_none()) {return Err(DatabaseErrors::NoUpdateParameters);}
 
