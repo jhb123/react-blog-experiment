@@ -11,6 +11,7 @@ pub mod routes {
     use markdown::{to_html_with_options, CompileOptions, Options};
     use kuchiki::{traits::*, NodeRef};
     use ::sqlx::migrate;
+    use sqlx::{query, QueryBuilder};
 
     //use sqlx::mysql::MySqlPool;
     use std::fs::{self,File};
@@ -20,6 +21,11 @@ pub mod routes {
     type Result<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
     const ARTICLE_DIR: &str = "./articles";
+
+    enum DatabaseErrors {
+        NoUpdateParameters,
+        BadQuery(String),
+    }
 
     #[derive(Database)]
     #[database("sqlx")]
@@ -58,7 +64,8 @@ pub mod routes {
                 // update database
                 match update_article(&upload, db).await {
                     Ok(_) => x.to_string(),
-                    Err(error) =>  return (Status::InternalServerError,error.0.to_string())
+                    Err(DatabaseErrors::BadQuery(msg)) =>  return (Status::InternalServerError, msg),
+                    Err(DatabaseErrors::NoUpdateParameters) =>  return (Status::BadRequest, "Must include at least a title, title image or blurb".to_string())
                 }
                 
             },
@@ -101,55 +108,65 @@ pub mod routes {
         NamedFile::open(&path).await.map_err(|e| NotFound(e.to_string()))
     }
 
-    async fn update_article(upload: &Form<Upload<'_>>, mut db: Connection<ArticlesDb>) -> Result<()>{
+    async fn update_article(upload: &Form<Upload<'_>>, mut db: Connection<ArticlesDb>) -> Result<(), DatabaseErrors>{
         // let null_str = "Null".to_string();
         let title = upload.title.as_ref();
         let title_image = upload.title_image.as_ref();
         let blurb = upload.blurb.as_ref();
         let article_id = upload.id.unwrap();
 
-        // let mut query_builder: QueryBuilder<MySql> = QueryBuilder::new(
-        //     "UPDATE articles");
-        let mut query = "UPDATE articles SET".to_string();
-        let mut parts: Vec<String> = Vec::new();
-        
+        if (title.is_none() && title_image.is_none() && blurb.is_none()) {return Err(DatabaseErrors::NoUpdateParameters);}
+
+        let mut query_builder = QueryBuilder::new("UPDATE articles SET ");
+
+        // OK, this isn't the most elegant thing ever. I could have used Diesel for this
+        // If I ever need to have this functionality somewhere else, I'll make it into
+        // its own function.
+        let mut enable_seperator = false;
         if let Some(title) = title {
-            parts.push( format!(" title = '{}'", title));
+            enable_seperator = true;
+            query_builder.push("title =  ");
+            query_builder.push_bind(title);
         }        
         if let Some(title_image) = title_image {
-            parts.push( format!(" title_image = '{}'", title_image));
+            if enable_seperator {
+                query_builder.push(", ");
+            } else { enable_seperator = true;};
+            query_builder.push("title_image = ");
+            query_builder.push_bind(title_image);
+            ;
         }
         if let Some(blurb) = blurb {
-            parts.push( format!(" blurb = '{}'", blurb));
+            if enable_seperator {
+                query_builder.push(", ");
+            } else { enable_seperator = true;};
+            query_builder.push("blurb = ");
+            query_builder.push_bind(blurb);
         }
-        query.push_str(&parts.join(" ,"));
-        query.push_str(&format!(" WHERE article_id = {}", article_id.to_string() ));
 
-        sqlx::query(&query)
-            .execute(&mut *db)
-            .await?;
+        query_builder.push(" WHERE article_id = ");
+        query_builder.push_bind(article_id);
 
-        Ok(())
+
+        match query_builder.build().execute(&mut *db).await {
+            Ok(_) => Ok(()),
+            Err(error) => Err(DatabaseErrors::BadQuery(error.to_string()))
+        }
+
     }
 
     async fn create_article(upload: &Form<Upload<'_>>, mut db: Connection<ArticlesDb>) -> Result<u64>{
 
-        let null_str = "Null".to_string();
-        let title = upload.title.as_ref().unwrap_or(&null_str);
-        let title_image = upload.title_image.as_ref().unwrap_or(&null_str);
-        let blurb = upload.blurb.as_ref().unwrap_or(&null_str);
+        let query_result = sqlx::query("INSERT INTO articles 
+        (is_published, visits, title, title_image, blurb) 
+        VALUES (false, 0, ?, ?, ?)")
+            .bind(&upload.title)
+            .bind(&upload.title_image)
+            .bind(&upload.blurb)
+            .execute(&mut *db)
+            .await?;
 
-        // let mut query_builder: QueryBuilder<MySql> = QueryBuilder::new(
-        //     "INSERT INTO articles (is_published, title, visits, title, title_image, blurb)");
-        let query = format!(
-            "INSERT INTO articles 
-            (is_published, visits, title, title_image, blurb) 
-            VALUES (false, 0, '{0}', '{1}', '{2}')",title, title_image, blurb);
-
-        let query_result = sqlx::query(&query )
-           .execute(&mut *db)
-           .await?;
-           Ok(query_result.last_insert_id())
+        Ok(query_result.last_insert_id())
      }
 
 
