@@ -12,7 +12,7 @@ pub mod routes {
     use markdown::{to_html_with_options, CompileOptions, Options};
     use kuchiki::{traits::*, NodeRef};
     use ::sqlx::migrate;
-    use sqlx::{query, QueryBuilder};
+    use sqlx::QueryBuilder;
     use sqlx::types::chrono::DateTime;
     //use sqlx::mysql::MySqlPool;
     use std::fs::{self,File};
@@ -61,6 +61,12 @@ pub mod routes {
         blurb: Option<String>,
         files: Vec<TempFile<'r>>,
     }
+
+    // #[derive(FromData)]
+    // struct PublishRequest {
+    //     id:  u64,
+    //     set_published: bool,
+    // }
     
     #[put("/upload", data = "<upload>")]
     async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>, db: Connection<ArticlesDb>) -> (Status, String){ 
@@ -105,6 +111,21 @@ pub mod routes {
         Ok(Json(res))
     }
 
+    #[get("/publish?<article_id>&<is_published>")]
+    async fn publish(_token: Token<'_>, mut db: Connection<ArticlesDb>, article_id: i64, is_published: bool) -> Result<String> { 
+
+        let time  = if is_published { Some(chrono::Utc::now())} else {None};
+
+        let _ = sqlx::query("UPDATE articles SET is_published = ?, published_date = ? WHERE article_id = ?")
+            .bind(is_published)
+            .bind(time)
+            .bind(article_id)
+            .execute(&mut *db)
+            .await?;
+
+        Ok(format!("set article {0} to published={1}",article_id, is_published))
+    }
+
     #[get("/<article_id>")]
     fn get_article(article_id: &str) -> (Status, String) { 
         let path = format!("{ARTICLE_DIR}/{article_id}/generated.html");
@@ -127,7 +148,7 @@ pub mod routes {
         let blurb = upload.blurb.as_ref();
         let article_id = upload.article_id.unwrap();
 
-        if (title.is_none() && title_image.is_none() && blurb.is_none()) {return Err(DatabaseErrors::NoUpdateParameters);}
+        if title.is_none() && title_image.is_none() && blurb.is_none() {return Err(DatabaseErrors::NoUpdateParameters);}
 
         let mut query_builder = QueryBuilder::new("UPDATE articles SET ");
 
@@ -146,12 +167,11 @@ pub mod routes {
             } else { enable_seperator = true;};
             query_builder.push("title_image = ");
             query_builder.push_bind(title_image);
-            ;
         }
         if let Some(blurb) = blurb {
             if enable_seperator {
                 query_builder.push(", ");
-            } else { enable_seperator = true;};
+            } // else { enable_seperator = true;};
             query_builder.push("blurb = ");
             query_builder.push_bind(blurb);
         }
@@ -276,7 +296,7 @@ pub mod routes {
         AdHoc::on_ignite("SQLx Stage", |rocket| async {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-                .mount("/articles", routes![upload_form, get_article, get_image, get_article_list])
+                .mount("/articles", routes![upload_form, get_article, get_image, get_article_list, publish])
         })
     }
 
