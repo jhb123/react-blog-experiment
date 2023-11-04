@@ -6,7 +6,7 @@ pub mod routes {
     use rocket::http::Status;
     use rocket::response::status::NotFound;
     use rocket::serde::json::Json;
-    use rocket::{put, routes, FromForm, get, Rocket, Build, error};
+    use rocket::{put, routes, FromForm, get, Rocket, Build, error, delete};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
@@ -124,6 +124,19 @@ pub mod routes {
             .await?;
 
         Ok(format!("set article {0} to published={1}",article_id, is_published))
+    }
+
+    #[delete("/delete?<article_id>")]
+    async fn delete_stuff(_token: Token<'_>, mut db: Connection<ArticlesDb>, article_id: i64)-> Result<()> {
+        let _ = sqlx::query("DELETE FROM articles WHERE article_id = ?")
+        .bind(article_id)
+        .execute(&mut *db)
+        .await?;
+    
+        let dir: String = format!("{ARTICLE_DIR}/{article_id}");
+
+        let _ = fs::remove_dir_all(dir).map_err(|e| NotFound(e.to_string()));
+        Ok(())
     }
 
     #[get("/<article_id>")]
@@ -296,7 +309,7 @@ pub mod routes {
         AdHoc::on_ignite("SQLx Stage", |rocket| async {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
-                .mount("/articles", routes![upload_form, get_article, get_image, get_article_list, publish])
+                .mount("/articles", routes![upload_form, get_article, get_image, get_article_list, publish, delete_stuff])
         })
     }
 
