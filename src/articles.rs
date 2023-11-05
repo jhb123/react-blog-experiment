@@ -6,7 +6,7 @@ pub mod routes {
     use rocket::http::Status;
     use rocket::response::status::NotFound;
     use rocket::serde::json::Json;
-    use rocket::{put, routes, FromForm, get, Rocket, Build, error, delete};
+    use rocket::{post, routes, FromForm, get, Rocket, Build, error, delete};
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
@@ -68,7 +68,7 @@ pub mod routes {
     //     set_published: bool,
     // }
     
-    #[put("/upload", data = "<upload>")]
+    #[post("/upload", data = "<upload>")]
     async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>, db: Connection<ArticlesDb>) -> (Status, String){ 
 
         
@@ -93,14 +93,18 @@ pub mod routes {
         // Save each file that is included with the form. If its markdown, generate a html
         // file as well
         for file in upload.files.iter_mut(){
-            if file.content_type().unwrap().is_markdown() {
-                if let Err(error) = generate_article_html(&article_id, file){
-                    return (Status::InternalServerError,error.to_string())
+            if let Some(content_type) = file.content_type() {
+                if content_type.is_markdown() {
+                    if let Err(error) = generate_article_html(&article_id, file){
+                        return (Status::InternalServerError,error.to_string())
+                    }
                 }
+                if let Err(error) = save_article_item(&article_id, file).await {
+                    return (Status::InternalServerError,error.to_string())
+                };
+            } else {
+                return (Status::BadRequest,"Missing content type for upload".to_string())
             }
-            if let Err(error) = save_article_item(&article_id, file).await {
-                return (Status::InternalServerError,error.to_string())
-            };
         }
         (Status::Accepted,"uploaded".to_string())
     }
