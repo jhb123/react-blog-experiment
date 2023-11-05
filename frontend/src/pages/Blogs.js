@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-
+import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Paper from '@mui/material/Paper';
@@ -10,6 +10,15 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import placeHolder from "../images/large.jpeg"
 import placeHolder2 from "../images/test.png"
+import {sumbitForm} from "../requests/admin"
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+
+// import TextField from '@mui/material/TextField';
+
 
 const Blogs = () => {
 
@@ -38,6 +47,24 @@ Where me and my true love were ever wont to gae,\
       setCards(cards => [item,...cards] );
     }
 
+    // const [html, setHTML] = useState({__html: ""});
+    
+    //   useEffect(() => {
+    //     async function createMarkup() {
+    //       //let response;
+    //       let response = await test_article()
+    //       //response = await fetch(`http://localhost:8000/backed_api/html_response/?user_email=chriss%40comtura.ai`)
+    //        const backendHtmlString = await response
+    
+    //        console.log(backendHtmlString)
+    //         return {__html: backendHtmlString};
+    //      }
+    //      createMarkup().then(result => setHTML(result));
+    //   }, []);
+      
+    
+    //   return <div dangerouslySetInnerHTML={html} />;
+
     return (
     <>
       <h1>Blog Articles</h1>
@@ -51,27 +78,51 @@ Where me and my true love were ever wont to gae,\
             <BlogCard image={item[0]} title = {item[1]} blurb={item[2]}></BlogCard>
           </Grid>
         )}
-      </Grid>
+      </Grid> 
 
     </>
     )
   };
   
   const AdminControlPanel = ({addCard}) => {
+
     return(
-      <Paper sx={{
-        background: "#aaaaaa",
-        display: "flex", 
-        flexDirection:"column", 
-        alignItems: "center",
-        justifyContent: "space-around",
-        maxWidth: 345, 
-        height:"100%", 
-        p:2 
-        }}>
-        <Typography color="tool" variant='h5'>Admin Controls</Typography>
-        <Button color="tool" variant="contained" onClick={addCard}>Create</Button>
+      <Paper sx={{ background: "#aaaaaa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", maxWidth: 345, height: "100%", p: 2 }}>
+        {/* <form onSubmit={sumbitForm}> */}
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", gap: 2 }}>
+            <Typography color="tool" variant='h5'>Article Manager</Typography>
+            <ArticleFormControl field_name="article_id"></ArticleFormControl>
+            <ArticleFormControl field_name="title"></ArticleFormControl>
+            <ArticleFormControl field_name="title_image"></ArticleFormControl>
+            <ArticleFormControl field_name="blurb"></ArticleFormControl>
+            <Button color="tool" variant="contained" component="label" startIcon={<CloudUploadIcon />}>
+              Choose Files
+              <input id="articleFiles" type="file" name="files[]" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
+            </Button>
+            <Button color="tool" variant="contained" component="label" onClick={() => sumbitForm()}>
+              Submit
+              {/* <input type="submit" hidden></input> */}
+            </Button>
+          </Box>
+        {/* </form> */}
       </Paper>
+    )
+  }
+
+
+  const ArticleFormControl = ({field_name}) => {
+  
+    return (
+    <FormControl>
+      <InputLabel htmlFor={field_name} size="small">{field_name}</InputLabel>
+        <OutlinedInput 
+          id={field_name}
+          variant="component-outlined"
+          aria-describedby={field_name}
+          label={field_name}
+          size="small"
+          />
+      </FormControl>
     )
   }
 

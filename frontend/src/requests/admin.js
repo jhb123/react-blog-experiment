@@ -15,6 +15,53 @@ export const secured_test = () =>
         console.log(error)
     });
 
+export const test_article = () => 
+  instance.get('articles/test2')
+  .then(function (response) {
+        console.log(response)
+        return response.data
+    })
+    .catch(function (error) {
+        console.log(error)
+        return error.data
+    });
+
+
+export const sumbitForm = () => {
+    let formData = new FormData();
+    let files = document.getElementById('articleFiles').files
+    console.log(files)
+
+    let filesArray = Array.from(files);
+
+    filesArray.forEach((file, index) => {
+        console.log(`File ${index + 1}: ${file.name}`);
+        if (file.name.substring(file.name.length - 3) === '.md') {
+            let name = file.name
+            // wow this was hard to figure out...
+            file = file.slice(0, file.size, "text/markdown")
+            formData.append('files', file, name);
+        } 
+        else {
+            formData.append('files', file, file.name );
+        }
+      });
+    
+    console.log(formData.headers)
+    
+    instance.post('articles/upload', formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        }, data : formData
+    }).then(function (response) {
+        console.log(response)
+        return response.data
+    })
+    .catch(function (error) {
+        console.log(error)
+        return error.data
+    });
+}
 // export const secured_test = () => 
 //     axios.get('/secured')
 //         .then(function (response) {
