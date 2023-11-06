@@ -74,7 +74,7 @@ Where me and my true love were ever wont to gae,\
           </AdminControlPanel>
         </Grid>
         {cards.map((item,index) =>
-          <Grid item xs={4}>
+          <Grid key={index} item xs={4}>
             <BlogCard image={item[0]} title = {item[1]} blurb={item[2]}></BlogCard>
           </Grid>
         )}
