@@ -16,6 +16,7 @@ import FormHelperText from '@mui/material/FormHelperText';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import TextField from '@mui/material/TextField';
 
 // import TextField from '@mui/material/TextField';
 
@@ -92,16 +93,14 @@ Where me and my true love were ever wont to gae,\
     const [fileInputText, setFileInputText] = useState("Choose Files")
 
     const onFieldChange = () => {
-      console.log("change")
       let elements = document.getElementById("articleForm").getElementsByTagName("input")
       let values = [];
       let fileCount = 0;
 
-
       for (const element of elements) {
         if (element.type !== "button") { 
             if (element.value) { 
-              values.push(element.value)
+              values.push(`${element.id}, ${element.value}`)
             }
             if (element.files) {
               fileCount = element.files.length
@@ -113,7 +112,6 @@ Where me and my true love were ever wont to gae,\
 
       fileCount === 0 ? setFileInputText("Choose Files") : setFileInputText(`Upload ${fileCount} Files `) 
       setCanSubmit(values.length > 0)
-      console.log(values)
     }
 
     const onSubmit = (event) => {
@@ -125,6 +123,7 @@ Where me and my true love were ever wont to gae,\
       })
       .catch(function (error) {
           console.log(error)
+          document.getElementById("articleForm").reset();
           return error.data
       });
     }
@@ -134,7 +133,7 @@ Where me and my true love were ever wont to gae,\
         <form id="articleForm" onSubmit={onSubmit}>
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", gap: 2 }}>
             <Typography color="tool" variant='h5'>Article Manager</Typography>
-            <ArticleFormControl onChange={onFieldChange} field_name="article_id"></ArticleFormControl>
+            <ArticleFormControl onChange={onFieldChange} field_name="article_id" type="number"></ArticleFormControl>
             <ArticleFormControl onChange={onFieldChange} field_name="title"></ArticleFormControl>
             <ArticleFormControl onChange={onFieldChange} field_name="title_image"></ArticleFormControl>
             <ArticleFormControl onChange={onFieldChange} field_name="blurb"></ArticleFormControl>
@@ -153,20 +152,16 @@ Where me and my true love were ever wont to gae,\
   }
 
 
-  const ArticleFormControl = ({field_name, onChange}) => {
+  const ArticleFormControl = ({field_name, onChange, type=""}) => {
   
     return (
-    <FormControl>
-      <InputLabel htmlFor={field_name} size="small">{field_name}</InputLabel>
-        <OutlinedInput 
-          id={field_name}
-          variant="component-outlined"
+      <TextField id={field_name}
+          variant="outlined"
           aria-describedby={field_name}
           label={field_name}
           size="small"
           onChange={onChange}
-          />
-      </FormControl>
+          type={type}></TextField>
     )
   }
 

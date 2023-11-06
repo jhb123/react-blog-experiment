@@ -31,23 +31,33 @@ export const sumbitArticleForm = (event) => {
     event.preventDefault()
 
     let formData = new FormData(event.target);
-    let files = document.getElementById('articleFiles').files
-    console.log(files)
 
-    let filesArray = Array.from(files);
+    let elements = document.getElementById("articleForm").getElementsByTagName("input")
 
-    filesArray.forEach((file, index) => {
-        console.log(`File ${index + 1}: ${file.name}`);
-        if (file.name.substring(file.name.length - 3) === '.md') {
-            let name = file.name
-            // wow this was hard to figure out...
-            file = file.slice(0, file.size, "text/markdown")
-            formData.append('files', file, name);
-        } 
-        else {
-            formData.append('files', file, file.name );
-        }
-      });
+    for (const element of elements) {
+        if (element.type !== "button") { 
+            if (element.value) { 
+              formData.append(element.id, element.value);
+            }
+            if (element.files) {
+                let files = element.files
+                let filesArray = Array.from(files);
+
+                filesArray.forEach((file, index) => {
+                    console.log(`File ${index + 1}: ${file.name}`);
+                    if (file.name.substring(file.name.length - 3) === '.md') {
+                        let name = file.name
+                        // wow this was hard to figure out...
+                        file = file.slice(0, file.size, "text/markdown")
+                        formData.append('files', file, name);
+                    } 
+                    else {
+                        formData.append('files', file, file.name );
+                    }
+                  });
+            }
+          }
+      };    
     
     return instance.post('articles/upload', formData, {
         headers: {
