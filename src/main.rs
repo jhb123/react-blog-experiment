@@ -13,7 +13,7 @@ use sqlx::MySqlPool;
 async fn rocket() ->  _ {
 
     rocket::build()
-        .mount("/", routes![index,react_build, admin_login, sensitive])
+        .mount("/", routes![index,react_build, admin_login, sensitive, blogs, contact])
         .attach(stage())
 
 }
@@ -38,5 +38,12 @@ async fn react_build(path: PathBuf) -> Option<NamedFile> {
     NamedFile::open(full_path).await.ok()
 }
 
-
-
+// These are routes made by react browser router
+#[get("/Blogs", rank = 1)]
+fn blogs() -> content::RawHtml<String> {
+    index()
+}
+#[get("/Contact", rank = 1)]
+fn contact() -> content::RawHtml<String> {
+    index()
+}
