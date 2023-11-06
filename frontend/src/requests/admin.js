@@ -27,8 +27,10 @@ export const test_article = () =>
     });
 
 
-export const sumbitForm = () => {
-    let formData = new FormData();
+export const sumbitArticleForm = (event) => {
+    event.preventDefault()
+
+    let formData = new FormData(event.target);
     let files = document.getElementById('articleFiles').files
     console.log(files)
 
@@ -55,6 +57,7 @@ export const sumbitForm = () => {
         }, data : formData
     }).then(function (response) {
         console.log(response)
+        document.getElementById("articleForm").reset();
         return response.data
     })
     .catch(function (error) {

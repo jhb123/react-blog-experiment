@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import placeHolder from "../images/large.jpeg"
 import placeHolder2 from "../images/test.png"
-import {sumbitForm} from "../requests/admin"
+import {sumbitArticleForm} from "../requests/admin"
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -88,7 +88,7 @@ Where me and my true love were ever wont to gae,\
 
     return(
       <Paper sx={{ background: "#aaaaaa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", maxWidth: 345, height: "100%", p: 2 }}>
-        {/* <form onSubmit={sumbitForm}> */}
+        <form id="articleForm" onSubmit={sumbitArticleForm}>
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", gap: 2 }}>
             <Typography color="tool" variant='h5'>Article Manager</Typography>
             <ArticleFormControl field_name="article_id"></ArticleFormControl>
@@ -99,12 +99,12 @@ Where me and my true love were ever wont to gae,\
               Choose Files
               <input id="articleFiles" type="file" name="files[]" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
             </Button>
-            <Button color="tool" variant="contained" component="label" onClick={() => sumbitForm()}>
+            <Button color="tool" variant="contained" component="label">
               Submit
-              {/* <input type="submit" hidden></input> */}
+              <input type="submit" hidden></input>
             </Button>
           </Box>
-        {/* </form> */}
+        </form>
       </Paper>
     )
   }
