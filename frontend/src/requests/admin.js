@@ -65,6 +65,9 @@ export const sumbitArticleForm = (event) => {
         }, data : formData
     })
 }
+export const getArticleList = () => axios.get('/articles/list')
+
+
 // export const secured_test = () => 
 //     axios.get('/secured')
 //         .then(function (response) {

@@ -10,11 +10,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import placeHolder from "../images/large.jpeg"
 import placeHolder2 from "../images/test.png"
-import {sumbitArticleForm} from "../requests/admin"
-import FormControl from '@mui/material/FormControl';
-import FormHelperText from '@mui/material/FormHelperText';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
+import {sumbitArticleForm, getArticleList} from "../requests/admin"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import TextField from '@mui/material/TextField';
 
@@ -23,9 +19,9 @@ import TextField from '@mui/material/TextField';
 
 const Blogs = () => {
 
-    const cardData1 = [placeHolder,"Loch Lomond", "blurb"]
-    const cardData2 = [placeHolder,"Bonnie Bonnie banks of Loch Lomond", "blurb"]
-    const cardData3 = [placeHolder2,"Loch Lomond", "\
+    const cardData1 = {"article_id": 2,"title_image" :placeHolder,"title" : "Loch Lomond", blurb: "blurb"}
+    const cardData2 = {"title_image" :placeHolder,"title" :"Bonnie Bonnie banks of Loch Lomond", blurb: "blurb"}
+    const cardData3 = {"title_image" :placeHolder2,"title" :"Loch Lomond",blurb:  "\
       By yon bonnie banks and by yon bonnie braes,\
   Where the sun shines bright on Loch Lomond,\
 Where me and my true love were ever wont to gae,\
@@ -37,17 +33,29 @@ Where me and my true love were ever wont to gae,\
   But me and my true love will never meet again,\
   On the bonnie, bonnie banks o' Loch Lomond.\
   \
-      "]
+      "}
 
     const testCards = [cardData1,cardData2, cardData3]
+    const [cards, setCards] = useState([]);
 
-    const [cards, setCards] = useState(testCards );
 
-    const addCard = () => {
-      var item = testCards[Math.floor(Math.random()*testCards.length)];
-      setCards(cards => [item,...cards] );
+    const refreshCards = async () => {
+      await getArticleList().then((response) => {
+        console.log(response)
+        setCards( response.data)
+        // return response.data
+      }).catch((error) => {
+        console.log(error)
+        setCards( testCards)
+        // return testCards
+      });
     }
 
+    // const [data, setData] = 
+    
+    useEffect(() => {
+      refreshCards()
+    }, [])
     // const [html, setHTML] = useState({__html: ""});
     
     //   useEffect(() => {
@@ -71,12 +79,12 @@ Where me and my true love were ever wont to gae,\
       <h1>Blog Articles</h1>
       <Grid container spacing={2} alignItems="stretch">
         <Grid item xs={4}>
-          <AdminControlPanel addCard={addCard}>
+          <AdminControlPanel onSubmitArticle={()=>refreshCards()}>
           </AdminControlPanel>
         </Grid>
         {cards.map((item,index) =>
           <Grid key={index} item xs={4}>
-            <BlogCard image={item[0]} title = {item[1]} blurb={item[2]}></BlogCard>
+            <BlogCard image={item["title_image"]} title = {item["title"]} blurb={item["blurb"]} creation_date={item["creation_date"]} article_id={item["article_id"]}></BlogCard>
           </Grid>
         )}
       </Grid> 
@@ -85,7 +93,7 @@ Where me and my true love were ever wont to gae,\
     )
   };
   
-  const AdminControlPanel = ({addCard}) => {
+  const AdminControlPanel = ({onSubmitArticle}) => {
 
 
     const [canSubmit, setCanSubmit] = useState(false)
@@ -126,6 +134,9 @@ Where me and my true love were ever wont to gae,\
           document.getElementById("articleForm").reset();
           return error.data
       });
+
+      onSubmitArticle()
+
     }
 
     return(
@@ -165,7 +176,7 @@ Where me and my true love were ever wont to gae,\
     )
   }
 
-  const BlogCard = ({image, title, blurb}) => {
+  const BlogCard = ({image, title, blurb, creation_date, article_id}) => {
 
     return(
       <Card sx={{ 
@@ -195,9 +206,14 @@ Where me and my true love were ever wont to gae,\
           WebkitLineClamp: 3,}}>
           {blurb}
         </Typography>
+        <Typography gutterBottom variant="body2" component="div">
+          Article: #{article_id} | Created: {creation_date}
+        </Typography>
       </CardContent>
       <CardActions sx={{justifySelf: "flex-end"}}>
         <Button size="small">Share</Button>
+        <Button size="small" color="tool" variant="contained">Publish</Button>
+        <Button size="small" color="tool" variant="contained">Delete</Button>
       </CardActions>
     </Card>
     )
