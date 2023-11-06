@@ -89,20 +89,60 @@ Where me and my true love were ever wont to gae,\
 
     const [canSubmit, setCanSubmit] = useState(false)
     
+    const [fileInputText, setFileInputText] = useState("Choose Files")
+
+    const onFieldChange = () => {
+      console.log("change")
+      let elements = document.getElementById("articleForm").getElementsByTagName("input")
+      let values = [];
+      let fileCount = 0;
+
+
+      for (const element of elements) {
+        if (element.type !== "button") { 
+            if (element.value) { 
+              values.push(element.value)
+            }
+            if (element.files) {
+              fileCount = element.files.length
+            }
+          }
+      };
+
+      setCanSubmit(values.length > 0)
+
+      fileCount === 0 ? setFileInputText("Choose Files") : setFileInputText(`Upload ${fileCount} Files `) 
+      setCanSubmit(values.length > 0)
+      console.log(values)
+    }
+
+    const onSubmit = (event) => {
+      sumbitArticleForm(event).then(function (response) {
+        console.log(response)
+        document.getElementById("articleForm").reset();
+        setCanSubmit(false)
+        return response.data
+      })
+      .catch(function (error) {
+          console.log(error)
+          return error.data
+      });
+    }
+
     return(
       <Paper sx={{ background: "#aaaaaa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", maxWidth: 345, height: "100%", p: 2 }}>
-        <form id="articleForm" onSubmit={sumbitArticleForm}>
+        <form id="articleForm" onSubmit={onSubmit}>
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", gap: 2 }}>
             <Typography color="tool" variant='h5'>Article Manager</Typography>
-            <ArticleFormControl field_name="article_id"></ArticleFormControl>
-            <ArticleFormControl field_name="title"></ArticleFormControl>
-            <ArticleFormControl field_name="title_image"></ArticleFormControl>
-            <ArticleFormControl field_name="blurb"></ArticleFormControl>
+            <ArticleFormControl onChange={onFieldChange} field_name="article_id"></ArticleFormControl>
+            <ArticleFormControl onChange={onFieldChange} field_name="title"></ArticleFormControl>
+            <ArticleFormControl onChange={onFieldChange} field_name="title_image"></ArticleFormControl>
+            <ArticleFormControl onChange={onFieldChange} field_name="blurb"></ArticleFormControl>
             <Button color="tool" variant="contained" component="label" startIcon={<CloudUploadIcon />}>
-              Choose Files
-              <input id="articleFiles" type="file" name="files[]" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
+              {fileInputText}
+              <input onChange={onFieldChange} id="articleFiles" type="file" name="files[]" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
             </Button>
-            <Button color="tool" variant="contained" component="label">
+            <Button color="tool" variant="contained" component="label" disabled={!canSubmit}>
               Submit
               <input type="submit" hidden></input>
             </Button>
@@ -113,7 +153,7 @@ Where me and my true love were ever wont to gae,\
   }
 
 
-  const ArticleFormControl = ({field_name}) => {
+  const ArticleFormControl = ({field_name, onChange}) => {
   
     return (
     <FormControl>
@@ -124,6 +164,7 @@ Where me and my true love were ever wont to gae,\
           aria-describedby={field_name}
           label={field_name}
           size="small"
+          onChange={onChange}
           />
       </FormControl>
     )

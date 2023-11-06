@@ -49,21 +49,11 @@ export const sumbitArticleForm = (event) => {
         }
       });
     
-    console.log(formData.headers)
-    
-    instance.post('articles/upload', formData, {
+    return instance.post('articles/upload', formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         }, data : formData
-    }).then(function (response) {
-        console.log(response)
-        document.getElementById("articleForm").reset();
-        return response.data
     })
-    .catch(function (error) {
-        console.log(error)
-        return error.data
-    });
 }
 // export const secured_test = () => 
 //     axios.get('/secured')
