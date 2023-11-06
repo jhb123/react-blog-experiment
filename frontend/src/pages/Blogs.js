@@ -86,6 +86,9 @@ Where me and my true love were ever wont to gae,\
   
   const AdminControlPanel = ({addCard}) => {
 
+
+    const [canSubmit, setCanSubmit] = useState(false)
+    
     return(
       <Paper sx={{ background: "#aaaaaa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", maxWidth: 345, height: "100%", p: 2 }}>
         <form id="articleForm" onSubmit={sumbitArticleForm}>
