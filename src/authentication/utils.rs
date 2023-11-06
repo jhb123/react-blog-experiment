@@ -130,7 +130,7 @@ impl<'r> FromRequest<'r> for Token<'r> {
                     }
                 }
             }
-            None => Outcome::Failure((Status::BadRequest, AuthError::MissingToken)),
+            None => Outcome::Failure((Status::Unauthorized, AuthError::MissingToken)),
         }
     }
 }
