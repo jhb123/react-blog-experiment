@@ -47,7 +47,8 @@ Where me and my true love were ever wont to gae,\
     const [cards, setCards] = useState([]);
 
     const deleteArticle = (article_id) => instance.delete("articles/delete", { params: { article_id: article_id } })
-    
+    const publishArticle = (article_id,is_published) => instance.get("articles/publish", { params: { article_id: article_id, is_published: is_published } })
+
     const handleDelete = async (article_id) => {
       try{
         await deleteArticle(article_id)
@@ -70,7 +71,6 @@ Where me and my true love were ever wont to gae,\
     // const [data, setData] = 
     
     useEffect(() => {
-      console.log("use effect")
       refreshCards()
     }, [])
     // const [html, setHTML] = useState({__html: ""});
@@ -91,6 +91,15 @@ Where me and my true love were ever wont to gae,\
     
     //   return <div dangerouslySetInnerHTML={html} />;
 
+    const handlePublish = async (article_id, publishState) => {
+      try{
+        await publishArticle(article_id, publishState)
+        refreshCards()
+      } catch (error) {
+        console.error(error);
+      };
+    }
+
     return (
     <>
       <h1>Blog Articles</h1>
@@ -110,6 +119,7 @@ Where me and my true love were ever wont to gae,\
               is_published={item["is_published"]}
               article_id={item["article_id"]}
               handleDelete={() => handleDelete(item["article_id"])}
+              handlePublish={handlePublish}
               ></BlogCard>
           </Grid>
         )}
@@ -212,7 +222,7 @@ Where me and my true love were ever wont to gae,\
     // )
   }
 
-  const BlogCard = ({image, title, blurb, creation_date, published_date, article_id, is_published, handleDelete}) => {
+  const BlogCard = ({image, title, blurb, creation_date, published_date, article_id, is_published, handleDelete, handlePublish}) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric'};
     const published_date_friendly = (new Date(published_date)).toLocaleString('en-UK', options);
     const theme = useTheme();
@@ -255,7 +265,7 @@ Where me and my true love were ever wont to gae,\
       </CardContent>
       <CardActions sx={{justifySelf: "flex-end"}}>
         <Button size="small">Share</Button>
-        {is_published? "": <Button size="small" color="tool" variant="contained">Publish</Button>}
+        <Button size="small" color="tool" variant="contained" onClick={() => handlePublish(article_id,!is_published)}>{is_published? "Unpublish": "Publish"}</Button>
         <Button size="small" color="tool" variant="contained" onClick={handleDelete}>Delete</Button>
       </CardActions>
     </Card>
