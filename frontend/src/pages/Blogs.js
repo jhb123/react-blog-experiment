@@ -47,8 +47,9 @@ Where me and my true love were ever wont to gae,\
     const handleDelete = async (article_id) => {
       try{
         await deleteArticle(article_id)
-        const response = await getArticleList();
-        setCards(response.data)
+        refreshCards()
+        // const response = await getArticleList();
+        // setCards(response.data)
       } catch (error) {
         console.error(error);
         // setCards( testCards)
