@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
+import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -15,7 +16,6 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import FilledInput from '@mui/material/FilledInput';
 import InputLabel from '@mui/material/InputLabel';
 
 // import TextField from '@mui/material/TextField';
@@ -23,8 +23,12 @@ import InputLabel from '@mui/material/InputLabel';
 
 const Blogs = () => {
 
-    const cardData1 = {"article_id": 2,"title_image" :placeHolder,"title" : "Loch Lomond", blurb: "blurb"}
-    const cardData2 = {"title_image" :placeHolder,"title" :"Bonnie Bonnie banks of Loch Lomond", blurb: "blurb"}
+    const cardData1 = 
+    {"article_id": 2,"title_image" :placeHolder,"title" : "Loch Lomond", blurb: "blurb txt",
+    "creation_date":"2023-11-07T21:31:43", "published_date":"2023-11-07T21:31:43","is_published":true
+  
+    }
+    const cardData2 = {"title_image" :placeHolder,"title" :"Bonnie Bonnie banks of Loch Lomond", blurb: "blurb txt"}
     const cardData3 = {"title_image" :placeHolder2,"title" :"Loch Lomond",blurb:  "\
       By yon bonnie banks and by yon bonnie braes,\
   Where the sun shines bright on Loch Lomond,\
@@ -102,6 +106,8 @@ Where me and my true love were ever wont to gae,\
               title = {item["title"]}
               blurb={item["blurb"]}
               creation_date={item["creation_date"]}
+              published_date={item["published_date"]}
+              is_published={item["is_published"]}
               article_id={item["article_id"]}
               handleDelete={() => handleDelete(item["article_id"])}
               ></BlogCard>
@@ -206,7 +212,10 @@ Where me and my true love were ever wont to gae,\
     // )
   }
 
-  const BlogCard = ({image, title, blurb, creation_date, article_id, is_published, handleDelete}) => {
+  const BlogCard = ({image, title, blurb, creation_date, published_date, article_id, is_published, handleDelete}) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric'};
+    const published_date_friendly = (new Date(published_date)).toLocaleString('en-UK', options);
+    const theme = useTheme();
 
     return(
       <Card sx={{ 
@@ -219,6 +228,7 @@ Where me and my true love were ever wont to gae,\
           ':hover': {
             boxShadow: 10, // theme.shadows[20]
           },
+          backgroundColor: is_published? "": theme.palette.warning.light
           }}>
         <CardMedia
         sx={{ height: 140 }}
@@ -226,8 +236,11 @@ Where me and my true love were ever wont to gae,\
         title="Loch Lomond"
       />
         <CardContent sx={{flexGrow: 1}}>
-        <Typography gutterBottom variant="h5" component="div">
+        <Typography gutterBottom variant="h5">
           {title}
+        </Typography>
+        <Typography gutterBottom variant="body1">
+          {published_date_friendly}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{
           display: '-webkit-box',
@@ -236,13 +249,13 @@ Where me and my true love were ever wont to gae,\
           WebkitLineClamp: 3,}}>
           {blurb}
         </Typography>
-        <Typography gutterBottom variant="body2" component="div">
+        <Typography gutterBottom variant="body2" component="div" color="common.white" sx={{backgroundColor: theme.palette.tool.main}}>
           Article: #{article_id} | Created: {creation_date}
         </Typography>
       </CardContent>
       <CardActions sx={{justifySelf: "flex-end"}}>
         <Button size="small">Share</Button>
-        <Button size="small" color="tool" variant="contained">Publish</Button>
+        {is_published? "": <Button size="small" color="tool" variant="contained">Publish</Button>}
         <Button size="small" color="tool" variant="contained" onClick={handleDelete}>Delete</Button>
       </CardActions>
     </Card>
