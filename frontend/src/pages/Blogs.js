@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import placeHolder from "../images/large.jpeg"
 import placeHolder2 from "../images/test.png"
-import {sumbitArticleForm, getArticleList, instance} from "../requests/admin"
+import {sumbitArticleForm, getArticleList, instance, test_article} from "../requests/admin"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import TextField from '@mui/material/TextField';
 import FormControl from '@mui/material/FormControl';
@@ -48,28 +48,25 @@ Where me and my true love were ever wont to gae,\
       try{
         await deleteArticle(article_id)
         refreshCards()
-        // const response = await getArticleList();
-        // setCards(response.data)
       } catch (error) {
         console.error(error);
-        // setCards( testCards)
-        // return testCards
       };
       
     }
-
     const refreshCards = async () => {
       try {
         const response = await getArticleList();
-        setCards( response.data)
+        setCards( response.data.concat(testCards))
       } catch (error) {
         console.error(error);
-      };
-    }
+        setCards( testCards)
+      } 
+    };
 
     // const [data, setData] = 
     
     useEffect(() => {
+      console.log("use effect")
       refreshCards()
     }, [])
     // const [html, setHTML] = useState({__html: ""});
