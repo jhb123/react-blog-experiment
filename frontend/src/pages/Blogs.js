@@ -10,9 +10,13 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import placeHolder from "../images/large.jpeg"
 import placeHolder2 from "../images/test.png"
-import {sumbitArticleForm, getArticleList} from "../requests/admin"
+import {sumbitArticleForm, getArticleList, instance} from "../requests/admin"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import TextField from '@mui/material/TextField';
+import FormControl from '@mui/material/FormControl';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import FilledInput from '@mui/material/FilledInput';
+import InputLabel from '@mui/material/InputLabel';
 
 // import TextField from '@mui/material/TextField';
 
@@ -38,17 +42,28 @@ Where me and my true love were ever wont to gae,\
     const testCards = [cardData1,cardData2, cardData3]
     const [cards, setCards] = useState([]);
 
+    const deleteArticle = (article_id) => instance.delete("articles/delete", { params: { article_id: article_id } })
+    
+    const handleDelete = async (article_id) => {
+      try{
+        await deleteArticle(article_id)
+        const response = await getArticleList();
+        setCards(response.data)
+      } catch (error) {
+        console.error(error);
+        // setCards( testCards)
+        // return testCards
+      };
+      
+    }
 
     const refreshCards = async () => {
-      await getArticleList().then((response) => {
-        console.log(response)
+      try {
+        const response = await getArticleList();
         setCards( response.data)
-        // return response.data
-      }).catch((error) => {
-        console.log(error)
-        setCards( testCards)
-        // return testCards
-      });
+      } catch (error) {
+        console.error(error);
+      };
     }
 
     // const [data, setData] = 
@@ -84,7 +99,14 @@ Where me and my true love were ever wont to gae,\
         </Grid>
         {cards.map((item,index) =>
           <Grid key={index} item xs={4}>
-            <BlogCard image={item["title_image"]} title = {item["title"]} blurb={item["blurb"]} creation_date={item["creation_date"]} article_id={item["article_id"]}></BlogCard>
+            <BlogCard 
+              image={item["title_image"]}
+              title = {item["title"]}
+              blurb={item["blurb"]}
+              creation_date={item["creation_date"]}
+              article_id={item["article_id"]}
+              handleDelete={() => handleDelete(item["article_id"])}
+              ></BlogCard>
           </Grid>
         )}
       </Grid> 
@@ -122,32 +144,29 @@ Where me and my true love were ever wont to gae,\
       setCanSubmit(values.length > 0)
     }
 
-    const onSubmit = (event) => {
-      sumbitArticleForm(event).then(function (response) {
-        console.log(response)
+    const onSubmit = async (event) => {
+      try {
+        await sumbitArticleForm(event);
+      } catch (error) {
+        console.log(error)
+      } finally {
         document.getElementById("articleForm").reset();
         setCanSubmit(false)
-        return response.data
-      })
-      .catch(function (error) {
-          console.log(error)
-          document.getElementById("articleForm").reset();
-          return error.data
-      });
-
-      onSubmitArticle()
-
+        setFileInputText("Choose files")
+        await onSubmitArticle()
+      }
     }
 
     return(
-      <Paper sx={{ background: "#aaaaaa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", maxWidth: 345, height: "100%", p: 2 }}>
+      <Paper sx={{ background: "#aaaaaa", display: "flex", flexDirection: "column", maxWidth: 345,  height: "100%", p: 2}}>
         <form id="articleForm" onSubmit={onSubmit}>
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-around", gap: 2 }}>
+          <Box sx={{ display: "flex", flexWrap: 'wrap', flexDirection: "column", alignItems: "left", justifyContent: "space-around", gap: 1, width:"100%"}}>
             <Typography color="tool" variant='h5'>Article Manager</Typography>
             <ArticleFormControl onChange={onFieldChange} field_name="article_id" type="number"></ArticleFormControl>
             <ArticleFormControl onChange={onFieldChange} field_name="title"></ArticleFormControl>
             <ArticleFormControl onChange={onFieldChange} field_name="title_image"></ArticleFormControl>
-            <ArticleFormControl onChange={onFieldChange} field_name="blurb"></ArticleFormControl>
+            {/* <ArticleFormControl onChange={onFieldChange} field_name="blurb"></ArticleFormControl> */}
+            <TextField fullWidth id="blurb" aria-describedby="blurb" label="blurb" onChange={onFieldChange} multiline rows={5}></TextField>
             <Button color="tool" variant="contained" component="label" startIcon={<CloudUploadIcon />}>
               {fileInputText}
               <input onChange={onFieldChange} id="articleFiles" type="file" name="files[]" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
@@ -164,19 +183,32 @@ Where me and my true love were ever wont to gae,\
 
 
   const ArticleFormControl = ({field_name, onChange, type=""}) => {
-  
-    return (
-      <TextField id={field_name}
-          variant="outlined"
+    return( 
+    <>
+      <FormControl fullWidth sx={{width: '100%' }}>
+        <InputLabel size="small" htmlFor={field_name}>{field_name}</InputLabel>
+        <OutlinedInput
+          id={field_name}
           aria-describedby={field_name}
           label={field_name}
           size="small"
           onChange={onChange}
-          type={type}></TextField>
+          type={type}
+        />
+      </FormControl>
+    </>
     )
+    // return (
+    //   <TextField id={field_name}
+    //       aria-describedby={field_name}
+    //       label={field_name}
+    //       size="small"
+    //       onChange={onChange}
+    //       type={type}></TextField>
+    // )
   }
 
-  const BlogCard = ({image, title, blurb, creation_date, article_id}) => {
+  const BlogCard = ({image, title, blurb, creation_date, article_id, is_published, handleDelete}) => {
 
     return(
       <Card sx={{ 
@@ -213,7 +245,7 @@ Where me and my true love were ever wont to gae,\
       <CardActions sx={{justifySelf: "flex-end"}}>
         <Button size="small">Share</Button>
         <Button size="small" color="tool" variant="contained">Publish</Button>
-        <Button size="small" color="tool" variant="contained">Delete</Button>
+        <Button size="small" color="tool" variant="contained" onClick={handleDelete}>Delete</Button>
       </CardActions>
     </Card>
     )
