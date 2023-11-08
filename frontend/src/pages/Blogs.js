@@ -176,14 +176,13 @@ Where me and my true love were ever wont to gae,\
         <form id="articleForm" onSubmit={onSubmit}>
           <Box sx={{ display: "flex", flexWrap: 'wrap', flexDirection: "column", alignItems: "left", justifyContent: "space-around", gap: 1, width:"100%"}}>
             <Typography color="tool" variant='h5'>Article Manager</Typography>
-            <ArticleFormControl onChange={onFieldChange} field_name="article_id" type="number"></ArticleFormControl>
-            <ArticleFormControl onChange={onFieldChange} field_name="title"></ArticleFormControl>
-            <ArticleFormControl onChange={onFieldChange} field_name="title_image"></ArticleFormControl>
-            {/* <ArticleFormControl onChange={onFieldChange} field_name="blurb"></ArticleFormControl> */}
-            <TextField fullWidth id="blurb" aria-describedby="blurb" label="blurb" onChange={onFieldChange} multiline rows={5}></TextField>
+            <ArticleFormControl  field_name="article_id" onChange={onFieldChange} type="number"></ArticleFormControl>
+            <ArticleFormControl field_name="title" onChange={onFieldChange}></ArticleFormControl>
+            <ArticleFormControl field_name="title_image" onChange={onFieldChange}></ArticleFormControl>
+            <TextField field_name="blurb" fullWidth id="blurb" aria-describedby="blurb" label="blurb" onChange={onFieldChange} multiline rows={5}></TextField>
             <Button color="tool" variant="contained" component="label" startIcon={<CloudUploadIcon />}>
               {fileInputText}
-              <input onChange={onFieldChange} id="articleFiles" type="file" name="files[]" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
+              <input onChange={onFieldChange} id="articleFiles" type="file" accept="text/markdown, .md, .markdown, image/png, image/jpeg" multiple hidden/>
             </Button>
             <Button color="tool" variant="contained" component="label" disabled={!canSubmit}>
               Submit

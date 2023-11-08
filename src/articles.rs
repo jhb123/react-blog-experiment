@@ -12,7 +12,7 @@ pub mod routes {
     use markdown::{to_html_with_options, CompileOptions, Options};
     use kuchiki::{traits::*, NodeRef};
     use ::sqlx::migrate;
-    use sqlx::QueryBuilder;
+    use sqlx::{QueryBuilder, Row, Column};
     use sqlx::types::chrono::DateTime;
     //use sqlx::mysql::MySqlPool;
     use std::fs::{self,File};
@@ -24,7 +24,7 @@ pub mod routes {
     const ARTICLE_DIR: &str = "./articles";
 
     enum DatabaseErrors {
-        NoUpdateParameters,
+        ArticleIdNotFound,
         BadQuery(String),
     }
 
@@ -77,8 +77,8 @@ pub mod routes {
                 // update database
                 match update_article(&upload, db).await {
                     Ok(_) => x.to_string(),
+                    Err(DatabaseErrors::ArticleIdNotFound) => return (Status::BadRequest, format!("No article with id {} exists",x)),
                     Err(DatabaseErrors::BadQuery(msg)) =>  return (Status::InternalServerError, msg),
-                    Err(DatabaseErrors::NoUpdateParameters) =>  return (Status::BadRequest, "Must include at least a title, title image or blurb".to_string())
                 }
                 
             },
@@ -89,6 +89,12 @@ pub mod routes {
                 }
             },
         };
+
+        let dir = format!("{ARTICLE_DIR}/{article_id}");
+
+        if let Err(error) = fs::create_dir_all(&dir){
+            return (Status::InternalServerError,error.to_string())
+        }
 
         // Save each file that is included with the form. If its markdown, generate a html
         // file as well
@@ -165,7 +171,25 @@ pub mod routes {
         let blurb = upload.blurb.as_ref();
         let article_id = upload.article_id.unwrap();
 
-        if title.is_none() && title_image.is_none() && blurb.is_none() {return Err(DatabaseErrors::NoUpdateParameters);}
+        if title.is_none() && title_image.is_none() && blurb.is_none() {
+
+            //sqlx::query("SELECT EXISTS (SELECT * FROM articles WHERE article_id=?) AS result");
+
+            return match sqlx::query("SELECT EXISTS (SELECT * FROM articles WHERE article_id=?) AS result")
+                .bind(&article_id)
+                .fetch_one(&mut *db)
+                .await {
+                    Ok(result) => {
+                        if result.get::<i64,_>(0) == 0 {
+                            return Err(DatabaseErrors::ArticleIdNotFound)
+                        } else {
+                            return Ok(())
+                        }
+                    },
+                    Err(error) => Err(DatabaseErrors::BadQuery(error.to_string()))
+                };
+            
+        }
 
         let mut query_builder = QueryBuilder::new("UPDATE articles SET ");
 
@@ -220,7 +244,7 @@ pub mod routes {
 
 
 
-    async fn save_article_item( guid: &String, file: &mut TempFile<'_>) -> io::Result<()> {
+    async fn save_article_item( article_id: &String, file: &mut TempFile<'_>) -> io::Result<()> {
         let name = file.name().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no name"))?;
         let content_type = file
             .content_type()
@@ -228,8 +252,8 @@ pub mod routes {
             .to_owned();
         let ext = content_type.extension().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no extension"))?;  
         let full_name = [name, &ext.to_string()].join(".");
-        let dir = format!("{ARTICLE_DIR}/{guid}");
-        fs::create_dir_all(&dir)?;
+        let dir = format!("{ARTICLE_DIR}/{article_id}");
+
         file.persist_to( format!("{dir}/{full_name}")).await?;
         Ok(()) 
     }
