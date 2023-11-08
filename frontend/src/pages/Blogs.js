@@ -24,12 +24,12 @@ import InputLabel from '@mui/material/InputLabel';
 const Blogs = () => {
 
     const cardData1 = 
-    {"article_id": 2,"title_image" :placeHolder,"title" : "Loch Lomond", blurb: "blurb txt",
+    {"article_id": 2, "title" : "Loch Lomond", blurb: "blurb txt",
     "creation_date":"2023-11-07T21:31:43", "published_date":"2023-11-07T21:31:43","is_published":true
   
     }
-    const cardData2 = {"title_image" :placeHolder,"title" :"Bonnie Bonnie banks of Loch Lomond", blurb: "blurb txt"}
-    const cardData3 = {"title_image" :placeHolder2,"title" :"Loch Lomond",blurb:  "\
+    const cardData2 = {"title" :"Bonnie Bonnie banks of Loch Lomond", blurb: "blurb txt"}
+    const cardData3 = {"title" :"Loch Lomond",blurb:  "\
       By yon bonnie banks and by yon bonnie braes,\
   Where the sun shines bright on Loch Lomond,\
 Where me and my true love were ever wont to gae,\
@@ -240,10 +240,10 @@ Where me and my true love were ever wont to gae,\
           backgroundColor: is_published? "": theme.palette.warning.light
           }}>
         <CardMedia
-        sx={{ height: 140 }}
-        image={image}
-        title="Loch Lomond"
-      />
+          sx={{ height: 140 }}
+          image={image? `/articles/${article_id}/image/${image}` : placeHolder}
+          title={image}
+        />
         <CardContent sx={{flexGrow: 1}}>
         <Typography gutterBottom variant="h5">
           {title}
@@ -259,7 +259,7 @@ Where me and my true love were ever wont to gae,\
           {blurb}
         </Typography>
         <Typography gutterBottom variant="body2" component="div" color="common.white" sx={{backgroundColor: theme.palette.tool.main}}>
-          Article: #{article_id} | Created: {creation_date}
+          Article: #{article_id} | Created: {creation_date} | Image {`/articles/${article_id}/images/${image}`}
         </Typography>
       </CardContent>
       <CardActions sx={{justifySelf: "flex-end"}}>
