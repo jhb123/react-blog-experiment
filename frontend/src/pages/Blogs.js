@@ -1,4 +1,4 @@
-import {useState, useEffect } from 'react';
+import {useState, useEffect, useContext } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/material';
 import Button from '@mui/material/Button';
@@ -19,10 +19,13 @@ import FormControl from '@mui/material/FormControl';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import {ImpenetrableButton} from "../components/ImpenetrableButton";
+import { AdminContext } from "../pages/Layout";
+
 // import TextField from '@mui/material/TextField';
 
 
 const Blogs = () => {
+  const [isAdmin, setIsAdmin] = useContext(AdminContext);
 
   const cardData1 =
   {
@@ -91,24 +94,29 @@ Where me and my true love were ever wont to gae,\
     <>
       <h1>Blog Articles</h1>
       <Grid container spacing={2} alignItems="stretch">
+        { isAdmin?
         <Grid item xs={4}>
           <AdminControlPanel onSubmitArticle={() => refreshCards()}>
           </AdminControlPanel>
-        </Grid>
-        {cards.map((item, index) =>
-          <Grid key={index} item xs={4}>
-            <BlogCard
-              image={item["title_image"]}
-              title={item["title"]}
-              blurb={item["blurb"]}
-              creation_date={item["creation_date"]}
-              published_date={item["published_date"]}
-              is_published={item["is_published"]}
-              article_id={item["article_id"]}
-              handleDelete={() => handleDelete(item["article_id"])}
-              handlePublish={handlePublish}
-            ></BlogCard>
-          </Grid>
+        </Grid>: ""
+        }
+        {cards.map((item, index) => {
+          if(item["published_date"] || isAdmin)
+            return (
+            <Grid key={index} item xs={4}>
+              <BlogCard
+                image={item["title_image"]}
+                title={item["title"]}
+                blurb={item["blurb"]}
+                creation_date={item["creation_date"]}
+                published_date={item["published_date"]}
+                is_published={item["is_published"]}
+                article_id={item["article_id"]}
+                handleDelete={() => handleDelete(item["article_id"])}
+                handlePublish={handlePublish}
+              ></BlogCard>
+            </Grid>
+            )}
         )}
       </Grid>
 
@@ -215,6 +223,8 @@ const BlogCard = ({ image, title, blurb, creation_date, published_date, article_
 
   const navigate = useNavigate();
   const navigateTo = () => navigate(`/Article/${article_id}`);//eg.history.push('/login');
+  
+  const [isAdmin, setIsAdmin] = useContext(AdminContext);
 
   return (
     <Card
@@ -253,17 +263,22 @@ const BlogCard = ({ image, title, blurb, creation_date, published_date, article_
         }}>
           {blurb}
         </Typography>
+        { isAdmin?
         <Typography gutterBottom variant="body2" component="div" color="common.white" sx={{ backgroundColor: theme.palette.tool.main }}>
           Article: #{article_id} | Created: {creation_date} | Image {`/articles/${article_id}/images/${image}`}
-        </Typography>
+        </Typography> : ""
+        }
       </CardContent>
       <CardActions sx={{ justifySelf: "flex-end" }}>
         <ImpenetrableButton size="small">Share</ImpenetrableButton>
-        <ImpenetrableButton onClick={() => {
-          handlePublish(article_id, !is_published)
-        }} size="small" color="tool" variant="contained">{is_published ? "Unpublish" : "Publish"}</ImpenetrableButton>
-        <ImpenetrableButton size="small" color="tool" variant="contained" onClick={handleDelete}>Delete</ImpenetrableButton>
-      </CardActions>
+        {isAdmin?
+        <>
+          <ImpenetrableButton onClick={() => {
+            handlePublish(article_id, !is_published)
+          }} size="small" color="tool" variant="contained">{is_published ? "Unpublish" : "Publish"}</ImpenetrableButton>
+          <ImpenetrableButton size="small" color="tool" variant="contained" onClick={handleDelete}>Delete</ImpenetrableButton>
+        </>:""}
+        </CardActions>
     </Card>
   )
 
