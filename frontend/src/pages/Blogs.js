@@ -11,6 +11,8 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import placeHolder from "../images/large.jpeg"
 import placeHolder2 from "../images/test.png"
+import {Link, useMatch, useResolvedPath} from "react-router-dom";
+
 import {sumbitArticleForm, getArticleList, instance, test_article} from "../requests/admin"
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import TextField from '@mui/material/TextField';
@@ -73,23 +75,7 @@ Where me and my true love were ever wont to gae,\
     useEffect(() => {
       refreshCards()
     }, [])
-    // const [html, setHTML] = useState({__html: ""});
     
-    //   useEffect(() => {
-    //     async function createMarkup() {
-    //       //let response;
-    //       let response = await test_article()
-    //       //response = await fetch(`http://localhost:8000/backed_api/html_response/?user_email=chriss%40comtura.ai`)
-    //        const backendHtmlString = await response
-    
-    //        console.log(backendHtmlString)
-    //         return {__html: backendHtmlString};
-    //      }
-    //      createMarkup().then(result => setHTML(result));
-    //   }, []);
-      
-    
-    //   return <div dangerouslySetInnerHTML={html} />;
 
     const handlePublish = async (article_id, publishState) => {
       try{
@@ -227,7 +213,9 @@ Where me and my true love were ever wont to gae,\
     const theme = useTheme();
 
     return(
-      <Card sx={{ 
+      <Card 
+
+        sx={{ 
           maxWidth: 345, 
           minHeight: 345, 
           height:"100%", 
@@ -238,7 +226,9 @@ Where me and my true love were ever wont to gae,\
             boxShadow: 10, // theme.shadows[20]
           },
           backgroundColor: is_published? "": theme.palette.warning.light
-          }}>
+        }}
+        component={Link} to={`/Article/${article_id}`}
+      >
         <CardMedia
           sx={{ height: 140 }}
           image={image? `/articles/${article_id}/image/${image}` : placeHolder}

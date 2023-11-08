@@ -26,6 +26,9 @@ export const test_article = () =>
         return error.data
     });
 
+export const get_article = (article_id) => instance.get(`articles/${article_id}`)
+    
+  
 
 export const sumbitArticleForm = (event) => {
     event.preventDefault()

@@ -13,7 +13,7 @@ use sqlx::MySqlPool;
 async fn rocket() ->  _ {
 
     rocket::build()
-        .mount("/", routes![index,react_build, admin_login, sensitive, blogs, contact])
+        .mount("/", routes![index,react_build, admin_login, sensitive, blogs, contact, articles])
         .attach(stage())
 
 }
@@ -45,5 +45,10 @@ fn blogs() -> content::RawHtml<String> {
 }
 #[get("/Contact", rank = 1)]
 fn contact() -> content::RawHtml<String> {
+    index()
+}
+
+#[get("/Article/<_..>", rank = 1)]
+fn articles() -> content::RawHtml<String> {
     index()
 }
