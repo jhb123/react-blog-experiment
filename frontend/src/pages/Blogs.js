@@ -20,6 +20,7 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import {ImpenetrableButton} from "../components/ImpenetrableButton";
 import { AdminContext } from "../pages/Layout";
+import {BlogRoute} from "../navigation/route";
 
 // import TextField from '@mui/material/TextField';
 
@@ -206,14 +207,6 @@ const ArticleFormControl = ({ field_name, onChange, type = "" }) => {
       </FormControl>
     </>
   )
-  // return (
-  //   <TextField id={field_name}
-  //       aria-describedby={field_name}
-  //       label={field_name}
-  //       size="small"
-  //       onChange={onChange}
-  //       type={type}></TextField>
-  // )
 }
 
 const BlogCard = ({ image, title, blurb, creation_date, published_date, article_id, is_published, handleDelete, handlePublish }) => {
@@ -222,7 +215,7 @@ const BlogCard = ({ image, title, blurb, creation_date, published_date, article_
   const theme = useTheme();
 
   const navigate = useNavigate();
-  const navigateTo = () => navigate(`/Article/${article_id}`);//eg.history.push('/login');
+  const navigateTo = () => navigate(`${BlogRoute.path}/${article_id}`);//eg.history.push('/login');
   
   const [isAdmin, setIsAdmin] = useContext(AdminContext);
 
@@ -283,7 +276,5 @@ const BlogCard = ({ image, title, blurb, creation_date, published_date, article_
   )
 
 }
-
-
 
 export default Blogs;

@@ -38,7 +38,7 @@ const App = () => {
                         <Route path={route.HomeRoute.path} element={route.HomeRoute.element} />
                         <Route path={route.BlogRoute.path} element={route.BlogRoute.element} />
                         <Route path={route.ContactRoute.path} element={route.ContactRoute.element} />
-                        <Route path={"/Article/:article_id"} element={<Article />}/>
+                        <Route path={`${route.BlogRoute.path}/:article_id`} element={<Article />}/>
                         <Route path="*" element={route.UndefinedRoute.element} />
                     </Route>
                 </Routes>
