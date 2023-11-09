@@ -2,6 +2,7 @@ import Blogs from "../pages/Blogs";
 import Home from "../pages/Home";
 import Contact from "../pages/Contact";
 import NoPage from "../pages/NoPage";
+import Article from "../pages/Article";
 
 export const BlogRoute = {
     path:  "/Blogs",
@@ -30,6 +31,5 @@ export const UndefinedRoute = {
     icon : undefined,
     element : <NoPage />
 }
-
 
 //  default BlogRoute;

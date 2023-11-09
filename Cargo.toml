@@ -4,6 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tokio = { version = "1", features = ["full"] }
+futures = "0.3"
 base64ct = { version = "1.6.0", features = ["alloc"] }
 chrono = { version = "0.4.31", features = ["clock", "serde"] }
 dialoguer = "0.11.0"
@@ -12,12 +14,24 @@ lazy_static = "1.4.0"
 rand = "0.8.5"
 serde = "1.0.188"
 sha2 = "0.10"
+uuid = {version = "1.5.0", features = ["v4", "fast-rng"]}
+markdown = "1.0.0-alpha.14"
+kuchiki = "0.8.1"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies.rocket]
 rocket = "=0.5.0-rc.3"
 features = ["json"]
+
+[dependencies.sqlx]
+version = "0.6"
+default-features = false
+features = ["macros", "migrate", "chrono"]
+
+[dependencies.rocket_db_pools]
+version = "=0.1.0-rc.3"
+features = ["sqlx_mysql"]
 
 [[bin]]
 name = "server"
