@@ -23,7 +23,6 @@ const Article = () => {
   
     return (
     <>
-      <h1>Article: {params.article_id}</h1>
       <div dangerouslySetInnerHTML={html} />
     </>)
 };
