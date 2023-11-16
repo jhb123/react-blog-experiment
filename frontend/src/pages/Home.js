@@ -6,30 +6,28 @@ import cv from '../static/cv.json'
 import { Box } from '@mui/system';
 import Stack from '@mui/material/Stack';
 import "../styles.css"
+import github from '../static/github-mark/github-mark.svg'
+import linkedin from '../static/LinkedIn-Logos/In/Digital/Blue/1x/In-Blue-128.png'
+import EmailIcon from '../static/email-svgrepo-com.svg'
 
 
 const Home = () => {
 
   return (<>
-    <Container maxWidth="sm">
-      <h1>Welcome!</h1>
-      <p>This is a place for me to write about what interests me and this includes technical challenges I face while programming, cryptic crosswords and the outdoors. But who knows, maybe I'll have a go at creative writing.</p>
-      <p>
-        Here are my various links
-      </p>
-      <ul>
-        <li>
-          Check out my programming projects at <a href="https://github.com/jhb123">https://github.com/jhb123</a>
-        </li>
-        <li>
-          Email me at <Link onClick={() => window.location = 'mailto:jhbriggs23@gmail.com'}>jhbriggs23@gmail.com</Link>
-        </li>
-        <li>
-          Connect with me on <a href="https://www.linkedin.com/in/joseph-briggs-123abc">https://www.linkedin.com/in/joseph-briggs-123abc</a>
-        </li>
-      </ul>
-    </Container>
     <Container maxWidth="md">
+    <Stack spacing={4} sx={{ pb: 5 }}>
+      <Typography variant="h2" sx={{ pt: 8 }}>Welcome</Typography>
+      <Typography variant="body1" textAlign="justify">This is a place for me to write about my interests the technical challenges I face while programming. I expect I will mostly write about words, cryptic crosswords and the outdoors. But who knows, maybe I'll have a go at reviewing books or creative writing.</Typography>
+      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", width: '100%', gap: "50px", padding: "16px" }}>
+        <a href="https://github.com/jhb123">
+          <img src={github} className='contactIcon' />
+        </a>
+        <a style={{ cursor: 'pointer' }} onClick={() => window.location = 'mailto:jhbriggs23@gmail.com'}>
+          <img src={EmailIcon} className='contactIcon' />
+        </a>
+        <a href="https://www.linkedin.com/in/joseph-briggs-123abc"><img src={linkedin} className='contactIcon' /></a>
+      </div>
+      </Stack>
       <CV />
     </Container>
   </>);
@@ -54,8 +52,8 @@ const CV = () => {
       <Typography variant="h4">Projects</Typography>
       <CVProgrammingProject item={cv['programming projects']['CrosswordScan']} />
       <CVProgrammingProject item={cv['programming projects']['enhance_greyscale']} />
-      <Typography variant="h4">Interests</Typography>
-      <Typography variant="body1" textAlign="justify">{cv['interests']}</Typography>
+      {/* <Typography variant="h4">Interests</Typography>
+      <Typography variant="body1" textAlign="justify">{cv['interests']}</Typography> */}
     </Stack>
   )
 }
@@ -78,12 +76,12 @@ const CVSkillsGridItem = ({ item }) => {
 const CVProgrammingProject = ({ item }) => {
   return (
     <>
-        <div style={{ display: "flex", flexDirection: "row" }}>
-          <Typography variant='subtitle1' className='cvLeft'>{item["name"]}</Typography>
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <Typography variant='subtitle1' className='cvLeft'>{item["name"]}</Typography>
         <div className='cvRight'>
           <Typography variant='body1'>{item["blurb"]}</Typography>
           <ul>
-            {item["links"].map((val, index) => <li key={index}><Link href={val}variant='body2'>{val}</Link></li>)}
+            {item["links"].map((val, index) => <li key={index}><Link href={val} variant='body2'>{val}</Link></li>)}
           </ul>
         </div>
       </div>
@@ -104,7 +102,7 @@ const CVRole = ({ item }) => {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "row" }}>
-          <Typography variant='subtitle1' className='cvLeft'>{item["title"]}</Typography>
+        <Typography variant='subtitle1' className='cvLeft'>{item["title"]}</Typography>
         <div className='cvRight'>
           <Typography variant='body1'>{item["dates"]}</Typography>
           <Typography variant='body1'>{item["blurb"]}</Typography>
@@ -118,9 +116,9 @@ const CVRole = ({ item }) => {
 const CVEducation = ({ item }) => {
   return (
     <>
-    <div style={{ display: "flex", flexDirection: "row" }}>
-      <Typography variant='subtitle1' sx={{display: "block", width: "30%", pl: 8, pr: 2}}>{item["degree"]}</Typography>
-        <div style={{ padding: "0px 0px 0px 16px", width: "70%" ,display: "inline", textAlign:"justify" }}>
+      <div style={{ display: "flex", flexDirection: "row" }}>
+        <Typography variant='subtitle1' sx={{ display: "block", width: "30%", pl: 8, pr: 2 }}>{item["degree"]}</Typography>
+        <div style={{ padding: "0px 0px 0px 16px", width: "70%", display: "inline", textAlign: "justify" }}>
           <Typography variant='body1' display="inline">{item["dates"]}</Typography>
           <Typography variant='body1'>{item["university"]}</Typography>
           <Typography variant='body1'>{item["grade"]}</Typography>

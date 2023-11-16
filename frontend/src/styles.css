@@ -20,3 +20,13 @@ body {
     display: inline;
     text-align: justify;
 }
+
+.contactIcon {
+    width: 50px;
+}
+
+ul {
+    list-style: "\2014    ";
+    padding: 0
+}
+
