@@ -36,7 +36,6 @@ const Banner = ({handleShowAdminLogin}) => {
           </Typography>
           <BannerButton to = {route.HomeRoute.path}>{route.HomeRoute.name}</BannerButton>
           <BannerButton to = {route.BlogRoute.path}>{route.BlogRoute.name}</BannerButton>
-          <BannerButton to = {route.ContactRoute.path}>{route.ContactRoute.name}</BannerButton>
           <IconButton color="inherit" onClick={handleShowAdminLogin}>
             <AdminPanelSettingsIcon />
           </IconButton>
