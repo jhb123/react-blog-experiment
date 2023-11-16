@@ -2,6 +2,7 @@ import { Container, Typography } from '@mui/material';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
+import Button from '@mui/material/Button';
 import cv from '../static/cv.json'
 import { Box } from '@mui/system';
 import Stack from '@mui/material/Stack';
@@ -9,6 +10,7 @@ import "../styles.css"
 import github from '../static/github-mark/github-mark.svg'
 import linkedin from '../static/LinkedIn-Logos/In/Digital/Blue/1x/In-Blue-128.png'
 import EmailIcon from '../static/email-svgrepo-com.svg'
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 
 
 const Home = () => {
@@ -34,6 +36,14 @@ const Home = () => {
 };
 
 const CV = () => {
+
+  const onDownload = () => {
+    const link = document.createElement("a");
+    link.download = `The Analysis, Experimental Characterisation and Prototyping of Technologies for Making Quantum Noise Limited Detections of Gravitational Waves.pdf`;
+    link.href = "/thesis.pdf";
+    link.click();
+  };
+  
   return (
 
     <Stack spacing={4} sx={{ pb: 12 }}>
@@ -47,7 +57,11 @@ const CV = () => {
       <CVJob item={cv['jobs']['ouster']}></CVJob>
       <CVJob item={cv['jobs']['caltech']}></CVJob>
       <Typography variant="h4">Education</Typography>
-      <CVEducation item={cv['education']['phd']}></CVEducation>
+      <CVEducation item={cv['education']['phd']}>
+      <Button onClick={onDownload} component="label" variant="text" endIcon={<PictureAsPdfIcon/>}>Thesis
+        {/* <a href='/thesis.pdf' download /> */}
+      </Button>
+      </CVEducation>
       <CVEducation item={cv['education']['undergrad']}></CVEducation>
       <Typography variant="h4">Projects</Typography>
       <CVProgrammingProject item={cv['programming projects']['CrosswordScan']} />
@@ -113,18 +127,20 @@ const CVRole = ({ item }) => {
       </div>
     </>)
 }
-const CVEducation = ({ item }) => {
+
+const CVEducation = ({ item, children }) => {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <Typography variant='subtitle1' sx={{ display: "block", width: "30%", pl: 8, pr: 2 }}>{item["degree"]}</Typography>
-        <div style={{ padding: "0px 0px 0px 16px", width: "70%", display: "inline", textAlign: "justify" }}>
+        <Typography variant='subtitle1' className='cvLeft'>{item["degree"]}</Typography>
+        <div className='cvRight'>
           <Typography variant='body1' display="inline">{item["dates"]}</Typography>
           <Typography variant='body1'>{item["university"]}</Typography>
           <Typography variant='body1'>{item["grade"]}</Typography>
           <ul>
             {item["highlights"].map((val, index) => <li key={index}><Typography variant='body2'>{val}</Typography></li>)}
           </ul>
+          {children}
         </div>
       </div>
     </>

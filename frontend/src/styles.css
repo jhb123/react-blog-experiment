@@ -10,13 +10,13 @@ body {
 
 .cvLeft {
     padding: 0 0 0 32px;
-    width: 30%;
+    width: 25%;
     display: inline;
 }
 
 .cvRight {
     padding: 0 0 0 32px;
-    width: 70%;
+    width: 75%;
     display: inline;
     text-align: justify;
 }
