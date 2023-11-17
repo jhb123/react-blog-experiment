@@ -1,12 +1,12 @@
-import Blogs from "../pages/Blogs";
+import Writing from "../pages/Writing";
 import Home from "../pages/Home";
 import NoPage from "../pages/NoPage";
 
 export const BlogRoute = {
-    path:  "/Blogs",
-    name : "Blogs",
+    path:  "/writing",
+    name : "writing",
     icon : undefined,
-    element : <Blogs />
+    element : <Writing />
 }
 
 export const HomeRoute = {
