@@ -1,8 +1,6 @@
 import Blogs from "../pages/Blogs";
 import Home from "../pages/Home";
-import Contact from "../pages/Contact";
 import NoPage from "../pages/NoPage";
-import Article from "../pages/Article";
 
 export const BlogRoute = {
     path:  "/Blogs",
@@ -18,12 +16,6 @@ export const HomeRoute = {
     element : <Home />
 }
 
-export const ContactRoute = {
-    path:  "/Contact",
-    name : "Contact",
-    icon : undefined,
-    element : <Contact />
-}
 
 export const UndefinedRoute = {
     path:  "*",

@@ -8,3 +8,25 @@ body {
     margin: 0;
 }
 
+.cvLeft {
+    padding: 0 0 0 32px;
+    width: 25%;
+    display: inline;
+}
+
+.cvRight {
+    padding: 0 0 0 32px;
+    width: 75%;
+    display: inline;
+    text-align: justify;
+}
+
+.contactIcon {
+    width: 50px;
+}
+
+ul {
+    list-style: "\2014    ";
+    padding: 0
+}
+
