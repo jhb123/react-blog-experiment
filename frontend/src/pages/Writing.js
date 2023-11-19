@@ -19,13 +19,13 @@ import FormControl from '@mui/material/FormControl';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import InputLabel from '@mui/material/InputLabel';
 import {ImpenetrableButton} from "../components/ImpenetrableButton";
-import { AdminContext } from "../pages/Layout";
+import { AdminContext } from "./Layout";
 import {BlogRoute} from "../navigation/route";
 
 // import TextField from '@mui/material/TextField';
 
 
-const Blogs = () => {
+const Writing = () => {
   const [isAdmin, setIsAdmin] = useContext(AdminContext);
 
   const cardData1 =
@@ -93,7 +93,7 @@ Where me and my true love were ever wont to gae,\
 
   return (
     <>
-      <h1>Blog Articles</h1>
+      <Typography variant='h2' align='center' sx={{p:2}}>Writing</Typography>
       <Grid container spacing={2} alignItems="stretch">
         { isAdmin?
         <Grid item xs={4}>
@@ -277,4 +277,4 @@ const BlogCard = ({ image, title, blurb, creation_date, published_date, article_
 
 }
 
-export default Blogs;
+export default Writing;

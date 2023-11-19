@@ -19,7 +19,7 @@ const BannerButton = ({to, children, ...props}) => {
 
   return(
     <Box sx={{p:1}}>
-      <Button component={Link} to={to} color = {isActive ? "primary": "secondary"} variant ="text" >
+      <Button component={Link} to={to} color = {isActive ? "luminousA": "luminousB"} variant ="text" >
         <Typography>{children}</Typography>
       </Button>
     </Box>);
@@ -29,14 +29,14 @@ const BannerButton = ({to, children, ...props}) => {
 const Banner = ({handleShowAdminLogin}) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="sticky" color="background">
+      <AppBar position="sticky" color="primary">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h4" style={{color:"#e0f4f4"}} component="div" sx={{ flexGrow: 1 }}>
             Joseph Briggs
           </Typography>
           <BannerButton to = {route.HomeRoute.path}>{route.HomeRoute.name}</BannerButton>
           <BannerButton to = {route.BlogRoute.path}>{route.BlogRoute.name}</BannerButton>
-          <IconButton color="inherit" onClick={handleShowAdminLogin}>
+          <IconButton color="luminousB" onClick={handleShowAdminLogin}>
             <AdminPanelSettingsIcon />
           </IconButton>
         </Toolbar>

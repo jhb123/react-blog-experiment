@@ -1,6 +1,7 @@
 import {test_article, get_article} from "../requests/admin"
 import { useRef, useState, useEffect } from 'react';
 import {useParams } from 'react-router-dom';
+import { Container } from '@mui/material';
 
 const Article = () => {
     // return <h1>Home</h1>;
@@ -23,7 +24,9 @@ const Article = () => {
   
     return (
     <>
-      <div dangerouslySetInnerHTML={html} />
+      <Container maxWidth="sm">
+        <div dangerouslySetInnerHTML={html} />
+      </Container>
     </>)
 };
 

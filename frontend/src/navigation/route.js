@@ -1,12 +1,20 @@
-import Blogs from "../pages/Blogs";
+import Writing from "../pages/Writing";
 import Home from "../pages/Home";
 import NoPage from "../pages/NoPage";
+import Secret from "../pages/Secret";
 
 export const BlogRoute = {
-    path:  "/Blogs",
-    name : "Blogs",
+    path:  "/writing",
+    name : "writing",
     icon : undefined,
-    element : <Blogs />
+    element : <Writing />
+}
+
+export const SecretRoute = {
+    path:  "/secret",
+    name : "secret",
+    icon : undefined,
+    element : <Secret />
 }
 
 export const HomeRoute = {
