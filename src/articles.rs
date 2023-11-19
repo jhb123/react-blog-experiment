@@ -7,6 +7,7 @@ pub mod routes {
     use rocket::response::status::NotFound;
     use rocket::serde::json::Json;
     use rocket::{post, routes, FromForm, get, Rocket, Build, error, delete};
+    use rocket::State;
     use rocket_db_pools::{sqlx, Database, Connection};
     use rocket::serde::{Serialize, Deserialize};
     use markdown::{to_html_with_options, CompileOptions, Options};
@@ -21,12 +22,14 @@ pub mod routes {
 
     type Result<T, E = rocket::response::Debug<sqlx::Error>> = std::result::Result<T, E>;
 
-    const ARTICLE_DIR: &str = "./articles";
-
     enum DatabaseErrors {
         ArticleIdNotFound,
         BadQuery(String),
     }
+
+    #[derive(Deserialize)]
+    #[serde(crate = "rocket::serde")]
+    struct AppConfig{article_dir: String}
 
     #[derive(Database)]
     #[database("sqlx")]
@@ -69,7 +72,7 @@ pub mod routes {
     // }
     
     #[post("/upload", data = "<upload>")]
-    async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>, db: Connection<ArticlesDb>) -> (Status, String){ 
+    async fn upload_form(_token: Token<'_>, mut upload: Form<Upload<'_>>, db: Connection<ArticlesDb>, config: &State<AppConfig>) -> (Status, String){ 
 
         
         let article_id = match upload.article_id {
@@ -90,7 +93,8 @@ pub mod routes {
             },
         };
 
-        let dir = format!("{ARTICLE_DIR}/{article_id}");
+
+        let dir = format!("{0}/{1}", config.article_dir, article_id);
 
         if let Err(error) = fs::create_dir_all(&dir){
             return (Status::InternalServerError,error.to_string())
@@ -101,11 +105,11 @@ pub mod routes {
         for file in upload.files.iter_mut(){
             if let Some(content_type) = file.content_type() {
                 if content_type.is_markdown() {
-                    if let Err(error) = generate_article_html(&article_id, file){
+                    if let Err(error) = generate_article_html(&article_id, file, &config.article_dir){
                         return (Status::InternalServerError,error.to_string())
                     }
                 }
-                if let Err(error) = save_article_item(&article_id, file).await {
+                if let Err(error) = save_article_item(&article_id, file, &config.article_dir).await {
                     return (Status::InternalServerError,error.to_string())
                 };
             } else {
@@ -137,21 +141,21 @@ pub mod routes {
     }
 
     #[delete("/delete?<article_id>")]
-    async fn delete_stuff(_token: Token<'_>, mut db: Connection<ArticlesDb>, article_id: i64)-> Result<()> {
+    async fn delete_stuff(_token: Token<'_>, mut db: Connection<ArticlesDb>, article_id: i64, config: &State<AppConfig>)-> Result<()> {
         let _ = sqlx::query("DELETE FROM articles WHERE article_id = ?")
         .bind(article_id)
         .execute(&mut *db)
         .await?;
     
-        let dir: String = format!("{ARTICLE_DIR}/{article_id}");
+        let dir = format!("{0}/{1}", config.article_dir, article_id);
 
         let _ = fs::remove_dir_all(dir).map_err(|e| NotFound(e.to_string()));
         Ok(())
     }
 
     #[get("/<article_id>")]
-    fn get_article(article_id: &str) -> (Status, String) { 
-        let path = format!("{ARTICLE_DIR}/{article_id}/generated.html");
+    fn get_article(article_id: &str, config: &State<AppConfig>) -> (Status, String) { 
+        let path = format!("{0}/{1}/generated.html", config.article_dir, article_id);
         match fs::read_to_string(path) {
             Ok(html) => (Status::Accepted,html),
             Err(_) => (Status::NotFound, "Article HTML is missing".to_string())
@@ -159,8 +163,8 @@ pub mod routes {
     }
 
     #[get("/<article_id>/image/<name>")]
-    async fn get_image(article_id: &str, name: &str) -> Result<NamedFile, NotFound<String>> { 
-        let path = format!("{ARTICLE_DIR}/{article_id}/{name}");
+    async fn get_image(article_id: &str, name: &str, config: &State<AppConfig>) -> Result<NamedFile, NotFound<String>> { 
+        let path = format!("{0}/{1}/{2}", config.article_dir, article_id, name);
         NamedFile::open(&path).await.map_err(|e| NotFound(e.to_string()))
     }
 
@@ -244,7 +248,7 @@ pub mod routes {
 
 
 
-    async fn save_article_item( article_id: &String, file: &mut TempFile<'_>) -> io::Result<()> {
+    async fn save_article_item( article_id: &String, file: &mut TempFile<'_>, article_dir: &String) -> io::Result<()> {
         let name = file.name().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no name"))?;
         let content_type = file
             .content_type()
@@ -252,13 +256,13 @@ pub mod routes {
             .to_owned();
         let ext = content_type.extension().ok_or_else(|| io::Error::new(io::ErrorKind::Other, "File has no extension"))?;  
         let full_name = [name, &ext.to_string()].join(".");
-        let dir = format!("{ARTICLE_DIR}/{article_id}");
+        let dir = format!("{0}/{1}", article_dir, article_id);
 
         file.persist_to( format!("{dir}/{full_name}")).await?;
         Ok(()) 
     }
 
-    fn generate_article_html( guid: &String, file: &mut TempFile<'_>) -> Result<(), Box<dyn std::error::Error>> {
+    fn generate_article_html( guid: &String, file: &mut TempFile<'_>, article_dir: &String) -> Result<(), Box<dyn std::error::Error>> {
         
         // Read the markdown to a string
         let markdown_path = file.path().ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Markdown file not found"))?;
@@ -287,7 +291,7 @@ pub mod routes {
         let mut result = Vec::new();
         document.serialize(&mut result)?;
         let modified_html = String::from_utf8(result)?;
-        let html_path = format!("{ARTICLE_DIR}/{guid}/generated.html");
+        let html_path = format!("{0}/{1}/generated.html", article_dir, guid);
         _ = File::create(&html_path)?;
         fs::write(html_path, modified_html)?;
  
@@ -337,6 +341,7 @@ pub mod routes {
         AdHoc::on_ignite("SQLx Stage", |rocket| async {
             rocket.attach(ArticlesDb::init())
                 .attach(AdHoc::try_on_ignite("SQLx Migrations", run_migrations))
+                .attach(AdHoc::config::<AppConfig>())
                 .mount("/articles", routes![upload_form, get_article, get_image, get_article_list, publish, delete_stuff])
         })
     }
