@@ -27,7 +27,7 @@ const Layout = () => {
       <AdminContext.Provider value={[isAdmin, handlesetIsAdmin]}>
         <Banner handleShowAdminLogin={setShowingAdminPage}/>
         <AdminForm open={showingAdminPage} setOpen={setShowingAdminPage}/>
-        <Container sx={{height : "100vh"}}>
+        <Container>
             <Outlet />
         </Container>   
       </AdminContext.Provider>
